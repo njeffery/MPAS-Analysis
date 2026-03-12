@@ -37,3 +37,5 @@ from mpas_analysis.sea_ice.climatology_map_primary_production import \
     ClimatologyMapSeaIcePrimaryProduction
 from mpas_analysis.sea_ice.climatology_map_aerosol_impurities import \
     ClimatologyMapSeaIceAerosolImpurities
+from mpas_analysis.sea_ice.climatology_map_total_chlorophyll import \
+    ClimatologyMapSeaIceTotalChlorophyll

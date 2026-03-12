@@ -76,6 +76,8 @@ class TestAnalysisTask(TestCase):
                  'climatologyMapSeaIceThickSH': 'seaIce',
                  'climatologyMapSeaIceAerosolImpuritiesNH': 'seaIce',
                  'climatologyMapSeaIceAerosolImpuritiesSH': 'seaIce',
+                 'climatologyMapSeaIceTotalChlorophyllNH': 'seaIce',
+                 'climatologyMapSeaIceTotalChlorophyllSH': 'seaIce',
                  'climatologyMapIceFluxDustNH': 'ocean',
                  'climatologyMapIceFluxDustSH': 'ocean'}
 
@@ -101,6 +103,10 @@ class TestAnalysisTask(TestCase):
                                                             'horizontalMap'],
                 'climatologyMapSeaIceAerosolImpuritiesSH': ['climatology',
                                                             'horizontalMap'],
+                'climatologyMapSeaIceTotalChlorophyllNH': ['climatology',
+                                                           'horizontalMap'],
+                'climatologyMapSeaIceTotalChlorophyllSH': ['climatology',
+                                                           'horizontalMap'],
                 'climatologyMapIceFluxDustNH': ['climatology', 'horizontalMap'],
                 'climatologyMapIceFluxDustSH': ['climatology', 'horizontalMap']}
 
