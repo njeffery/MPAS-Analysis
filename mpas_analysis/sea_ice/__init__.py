@@ -35,3 +35,5 @@ from mpas_analysis.sea_ice.climatology_map_area_pond import \
     ClimatologyMapSeaIcePondArea
 from mpas_analysis.sea_ice.climatology_map_primary_production import \
     ClimatologyMapSeaIcePrimaryProduction
+from mpas_analysis.sea_ice.climatology_map_aerosol_impurities import \
+    ClimatologyMapSeaIceAerosolImpurities
