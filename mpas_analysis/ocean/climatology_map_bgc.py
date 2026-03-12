@@ -101,10 +101,10 @@ class ClimatologyMapBGC(AnalysisTask):
             prefix = config.get(fieldSectionName, 'filePrefix')
             mpasFieldName = '{}{}'.format(prefix, fieldName)
 
-            # CO2 flux and pCO2 has no vertical levels, throws error if you try
+            # CO2 flux, Fe flux and pCO2 has no vertical levels, throws error if you try
             # to select any. Can add any other flux-like variables to this
             # list.
-            if fieldName not in ['CO2_gas_flux', 'pCO2surface']:
+            if fieldName not in ['CO2_gas_flux', 'pCO2surface', 'FeSurfaceFlux']:
                 iselValues = {'nVertLevels': 0}
             else:
                 iselValues = None
@@ -319,6 +319,10 @@ class RemapBGCClimatology(RemapMpasClimatologySubtask):
         # comparison to the SOM-FFN product
         if fieldName == 'timeMonthly_avg_CO2_gas_flux':
             conversion = -1 * (60 * 60 * 24 * 365.25) / 10**3
+            climatology[fieldName] = conversion * climatology[fieldName]
+        # Convert Fe surface flux from mmol/m2 s to mmol/m2 yr
+        elif fieldName == 'timeMonthly_avg_FeSurfaceFlux':
+            conversion = 365.25 * 24 * 3600  # s->yr
             climatology[fieldName] = conversion * climatology[fieldName]
         # Convert O2 from mmol/m3 to mL/L for comparison to WOA product
         elif fieldName == 'timeMonthly_avg_ecosysTracers_O2':
