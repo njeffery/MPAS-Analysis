@@ -19,6 +19,8 @@ from mpas_analysis.sea_ice.climatology_map_tendency_volume_thermo import \
 from mpas_analysis.sea_ice.climatology_map_tendency_volume_transp import \
     ClimatologyMapSeaIceVolumeTendencyTransp
 from mpas_analysis.sea_ice.time_series import TimeSeriesSeaIce
+from mpas_analysis.sea_ice.time_series_primary_production import \
+    TimeSeriesSeaIcePrimaryProduction
 from mpas_analysis.sea_ice.climatology_map_berg_conc import \
     ClimatologyMapIcebergConc
 from mpas_analysis.sea_ice.climatology_map_production import \

@@ -117,10 +117,25 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
         obsFieldName = 'primaryProduction'
         sectionName = self.taskName
 
+        # Season and hemisphere-specific data ranges
+        season_ranges = {
+            'ANN': {'NH': None, 'SH': None},
+            'JFM': {'NH': '0-58', 'SH': '0-12'},
+            'AMJ': {'NH': '0-30', 'SH': '0-5'},
+            'JAS': {'NH': '0-28', 'SH': '0-60'},
+            'OND': {'NH': None, 'SH': '0-140'},
+            'DJF': {'NH': None, 'SH': None},
+            'MAM': {'NH': None, 'SH': None},
+            'JJA': {'NH': None, 'SH': None},
+            'SON': {'NH': None, 'SH': None},
+        }
+
         observationPrefixes = config.getexpression(sectionName,
                                                    'observationPrefixes')
         for prefix in observationPrefixes:
             for season in seasons:
+                dataRange = season_ranges.get(season, {}).get(hemisphere)
+                
                 observationTitleLabel = \
                     'Observations ({})'.format(prefix)
 
@@ -141,12 +156,27 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
                 self.add_subtask(remapObservationsSubtask)
                 for comparisonGridName in comparisonGridNames:
 
-                    imageDescription = \
-                        'Climatology Map of {}-Hemisphere Sea-Ice ' \
-                        'Primary Production'.format(hemisphereLong)
+                    if dataRange:
+                        imageDescription = \
+                            '{} {} Sea-Ice Primary Production ({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
+                                season, hemisphereLong, dataRange)
+                        fieldNameWithRange = 'Sea ice primary production ({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
+                            dataRange)
+                    else:
+                        imageDescription = \
+                            '{} {} Sea-Ice Primary Production'.format(
+                                season, hemisphereLong)
+                        fieldNameWithRange = 'Sea ice primary production'
+                    
+                    # observational citation by hemisphere
+                    if hemisphere == 'NH':
+                        obsCitation = 'Leu et al. 2015'
+                    else:
+                        obsCitation = 'Arrigo et al. 2010'
+
                     imageCaption = \
-                        '{}. <br> Observations: {}'.format(
-                            imageDescription, prefix)
+                        '{}. <br> Observations: {} ({})'.format(
+                            imageDescription, prefix, obsCitation)
                     galleryGroup = \
                         '{}-Hemisphere Sea-Ice Primary Production'.format(
                             hemisphereLong)
@@ -165,7 +195,7 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
                     subtask.set_plot_info(
                         outFileLabel='primaryProduction{}{}'.format(prefix,
                                                                     hemisphere),
-                        fieldNameInTitle='Sea ice primary production',
+                        fieldNameInTitle=fieldNameWithRange,
                         mpasFieldName=mpasFieldName,
                         refFieldName=obsFieldName,
                         refTitleLabel=observationTitleLabel,
@@ -189,12 +219,36 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
         galleryName = None
         refTitleLabel = 'Control: {}'.format(controlRunName)
 
+        # Season and hemisphere-specific data ranges
+        season_ranges = {
+            'ANN': {'NH': None, 'SH': None},
+            'JFM': {'NH': '0-58', 'SH': '0-12'},
+            'AMJ': {'NH': '0-30', 'SH': '0-5'},
+            'JAS': {'NH': '0-28', 'SH': '0-60'},
+            'OND': {'NH': None, 'SH': '0-140'},
+            'DJF': {'NH': None, 'SH': None},
+            'MAM': {'NH': None, 'SH': None},
+            'JJA': {'NH': None, 'SH': None},
+            'SON': {'NH': None, 'SH': None},
+        }
+
         for season in seasons:
+            dataRange = season_ranges.get(season, {}).get(hemisphere)
+            
             for comparisonGridName in comparisonGridNames:
 
-                imageDescription = \
-                    '{} Climatology Map of {}-Hemisphere Sea-Ice ' \
-                    'Primary Production'.format(season, hemisphereLong)
+                if dataRange:
+                    imageDescription = \
+                        '{} {} Sea-Ice Primary Production ({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
+                            season, hemisphereLong, dataRange)
+                    fieldNameWithRange = 'Sea ice primary production ({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
+                        dataRange)
+                else:
+                    imageDescription = \
+                        '{} {} Sea-Ice Primary Production'.format(
+                            season, hemisphereLong)
+                    fieldNameWithRange = 'Sea ice primary production'
+                
                 imageCaption = imageDescription
                 galleryGroup = \
                     '{}-Hemisphere Sea-Ice Primary Production'.format(
@@ -209,7 +263,7 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
 
                 subtask.set_plot_info(
                     outFileLabel='primaryProduction{}'.format(hemisphere),
-                    fieldNameInTitle='Sea ice primary production',
+                    fieldNameInTitle=fieldNameWithRange,
                     mpasFieldName=mpasFieldName,
                     refFieldName=mpasFieldName,
                     refTitleLabel=refTitleLabel,

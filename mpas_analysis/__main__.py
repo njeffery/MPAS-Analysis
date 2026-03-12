@@ -367,6 +367,8 @@ def build_analysis_list(config, controlConfig):
     analyses.append(seaIceTimeSeriesTask)
     analyses.append(sea_ice.TimeSeriesSeaIce(config, seaIceTimeSeriesTask,
                                              controlConfig))
+    analyses.append(sea_ice.TimeSeriesSeaIcePrimaryProduction(
+        config, seaIceTimeSeriesTask, controlConfig))
 
     # Iceberg Analyses
     analyses.append(sea_ice.ClimatologyMapIcebergConc(
