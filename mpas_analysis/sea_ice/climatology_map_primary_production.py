@@ -54,7 +54,7 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
 
         fieldName = 'seaIcePrimaryProduction'
 
-        tags = ['climatology', 'horizontalMap', fieldName, 'publicObs']
+        tags = ['climatology', 'horizontalMap', fieldName, 'publicObs', 'BGC']
         if hemisphere == 'NH':
             tags = tags + ['arctic']
         else:
