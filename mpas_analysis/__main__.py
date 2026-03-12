@@ -364,6 +364,16 @@ def build_analysis_list(config, controlConfig):
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='SH', control_config=controlConfig))
 
+    # iceFluxDust climatologies (ocean variable mapped with sea-ice projections)
+    analyses.append(ocean.ClimatologyMapIceFluxDust(
+        config=config,
+        mpasClimatologyTask=oceanClimatologyTasks['avg'],
+        hemisphere='NH', controlConfig=controlConfig))
+    analyses.append(ocean.ClimatologyMapIceFluxDust(
+        config=config,
+        mpasClimatologyTask=oceanClimatologyTasks['avg'],
+        hemisphere='SH', controlConfig=controlConfig))
+
     analyses.append(seaIceTimeSeriesTask)
     analyses.append(sea_ice.TimeSeriesSeaIce(config, seaIceTimeSeriesTask,
                                              controlConfig))

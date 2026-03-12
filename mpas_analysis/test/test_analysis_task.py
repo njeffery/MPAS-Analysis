@@ -73,7 +73,9 @@ class TestAnalysisTask(TestCase):
                  'climatologyMapSeaIceConcNH': 'seaIce',
                  'climatologyMapSeaIceConcSH': 'seaIce',
                  'climatologyMapSeaIceThickNH': 'seaIce',
-                 'climatologyMapSeaIceThickSH': 'seaIce'}
+                 'climatologyMapSeaIceThickSH': 'seaIce',
+                 'climatologyMapIceFluxDustNH': 'ocean',
+                 'climatologyMapIceFluxDustSH': 'ocean'}
 
         tags = {'timeSeriesOHC': ['timeSeries', 'ohc'],
                 'timeSeriesSST': ['timeSeries', 'sst'],
@@ -92,7 +94,9 @@ class TestAnalysisTask(TestCase):
                 'climatologyMapSeaIceThickNH': ['climatology',
                                                 'horizontalMap'],
                 'climatologyMapSeaIceThickSH': ['climatology',
-                                                'horizontalMap']}
+                                                'horizontalMap'],
+                'climatologyMapIceFluxDustNH': ['climatology', 'horizontalMap'],
+                'climatologyMapIceFluxDustSH': ['climatology', 'horizontalMap']}
 
         # test 'all'
         expectedResults = {}
