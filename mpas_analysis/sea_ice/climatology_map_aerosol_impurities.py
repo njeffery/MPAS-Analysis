@@ -47,7 +47,7 @@ class ClimatologyMapSeaIceAerosolImpurities(AnalysisTask):
         """
         task_name = f'climatologyMapSeaIceAerosolImpurities{hemisphere}'
 
-        tags = ['climatology', 'horizontalMap', 'BGC']
+        tags = ['climatology', 'horizontalMap', 'BGC', 'seaiceAerosols']
         if hemisphere == 'NH':
             tags.append('arctic')
         else:
