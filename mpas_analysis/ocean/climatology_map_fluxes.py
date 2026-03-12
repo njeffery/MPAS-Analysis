@@ -176,15 +176,19 @@ class ClimatologyMapFluxes(AnalysisTask):
                     if 'HeatFlux' in mpasFieldName:
                         groupSubtitle = 'Heat fluxes'
                         unitsLabel = r'W m$^{-2}$'
+                        configSectionName = None
                     elif variable.startswith('dust_FLUX_'):
                         groupSubtitle = 'Dust fluxes'
                         unitsLabel = r'g m$^{-2}$ yr$^{-1}$'
+                        configSectionName = 'dust_FLUX_*'
                     elif variable == 'IRON_FLUX_IN':
                         groupSubtitle = 'Iron fluxes'
                         unitsLabel = r'mmol m$^{-2}$ yr$^{-1}$'
+                        configSectionName = 'IRON_FLUX_IN'
                     else:
                         groupSubtitle = 'Mass fluxes'
                         unitsLabel = r'kg m$^{-2}$ s$^{-1}$'
+                        configSectionName = None
 
                     subtask.set_plot_info(
                         outFileLabel=outFileName,
@@ -198,7 +202,8 @@ class ClimatologyMapFluxes(AnalysisTask):
                         galleryGroup='surface fluxes',
                         groupSubtitle=None,
                         groupLink=groupLink,
-                        galleryName=galleryName)
+                        galleryName=galleryName,
+                        configSectionName=configSectionName)
 
                     self.add_subtask(subtask)
 
