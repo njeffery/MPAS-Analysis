@@ -155,7 +155,7 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
 
         sectionName = self.taskName
 
-        plotTitle = 'Hemispherically-Integrated Sea-Ice Primary Production'
+        plotTitle = 'Total Sea-Ice Primary Production'
         units = 'Tg yr$^{-1}$'
 
         mainRunName = config.get('runs', 'mainRunName')
@@ -350,7 +350,7 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
             dsOut['primaryProduction'].attrs['description'] = \
                 f'Integrated {hemisphere} sea-ice primary production'
             dsOut['primaryProduction'].attrs['long_name'] = \
-                f'{hemisphere} Hemispherically-Integrated Primary Production'
+                f'{hemisphere} Total Primary Production'
 
             write_netcdf_with_fill(dsOut, outFileName)
             dsTimeSeries[hemisphere] = dsOut
