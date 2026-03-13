@@ -33,6 +33,35 @@ from mpas_analysis.shared.plot.save import savefig
 from mpas_analysis.shared.projection import get_cartopy_projection
 
 
+def _set_two_line_suptitle(fig, config, title, titleFontSize=None, y=0.95,
+                           subtitleScale=0.8, subtitleGap=0.03):
+    """Set a figure title with an optional smaller second line."""
+    if title is None:
+        return False
+
+    if titleFontSize is None:
+        titleFontSize = config.getint('plot', 'titleFontSize')
+
+    base_font = {
+        'color': config.get('plot', 'titleFontColor'),
+        'weight': config.get('plot', 'titleFontWeight')
+    }
+
+    title_parts = title.split('\n', 1)
+    if len(title_parts) == 1:
+        fig.suptitle(title_parts[0], y=y, size=titleFontSize, **base_font)
+        return False
+
+    first_line, second_line = title_parts
+    fig.suptitle(first_line, y=y, size=titleFontSize, **base_font)
+    fig.text(0.5, y - subtitleGap, second_line,
+             ha='center', va='top',
+             size=titleFontSize * subtitleScale,
+             color=base_font['color'],
+             weight=base_font['weight'])
+    return True
+
+
 def plot_polar_comparison(
         config,
         lon,
@@ -208,13 +237,8 @@ def plot_polar_comparison(
 
     fig = plt.figure(figsize=figsize, dpi=dpi)
 
-    if (title is not None):
-        if titleFontSize is None:
-            titleFontSize = config.get('plot', 'titleFontSize')
-        title_font = {'size': titleFontSize,
-                      'color': config.get('plot', 'titleFontColor'),
-                      'weight': config.get('plot', 'titleFontWeight')}
-        fig.suptitle(title, y=0.95, **title_font)
+    has_two_line_title = _set_two_line_suptitle(
+        fig, config, title, titleFontSize=titleFontSize, y=0.95)
 
     plottitle_font = {'size': config.get('plot',
                                          'threePanelPlotTitleFontSize')}
@@ -243,6 +267,8 @@ def plot_polar_comparison(
     plt.tight_layout(pad=4.)
     if vertical:
         plt.subplots_adjust(top=0.9)
+    if has_two_line_title:
+        plt.subplots_adjust(top=0.82)
 
     if fileout is not None:
         savefig(fileout, config)
@@ -403,13 +429,8 @@ def plot_global_comparison(
         else:
             figsize = (8, 13)
     fig = plt.figure(figsize=figsize, dpi=dpi)
-    if (title is not None):
-        if titleFontSize is None:
-            titleFontSize = config.get('plot', 'titleFontSize')
-        title_font = {'size': titleFontSize,
-                      'color': config.get('plot', 'titleFontColor'),
-                      'weight': config.get('plot', 'titleFontWeight')}
-        fig.suptitle(title, y=0.935, **title_font)
+    has_two_line_title = _set_two_line_suptitle(
+        fig, config, title, titleFontSize=titleFontSize, y=0.935)
 
     plottitle_font = {'size': config.get('plot',
                                          'threePanelPlotTitleFontSize')}
@@ -466,6 +487,8 @@ def plot_global_comparison(
 
     # Note: in the multi-line reference-title case, uneven spacing is handled
     # via GridSpec so all three panels keep identical sizes.
+    if has_two_line_title:
+        fig.subplots_adjust(top=0.84)
 
     if fileout is not None:
         savefig(fileout, config, pad_inches=0.2)
@@ -699,13 +722,8 @@ def plot_projection_comparison(
 
     fig = plt.figure(figsize=figsize, dpi=dpi)
 
-    if title is not None:
-        if titleFontSize is None:
-            titleFontSize = config.get('plot', 'titleFontSize')
-        title_font = {'size': titleFontSize,
-                      'color': config.get('plot', 'titleFontColor'),
-                      'weight': config.get('plot', 'titleFontWeight')}
-        fig.suptitle(title, y=0.95, **title_font)
+    has_two_line_title = _set_two_line_suptitle(
+        fig, config, title, titleFontSize=titleFontSize, y=0.95)
 
     plottitle_font = {'size': config.get('plot',
                                          'threePanelPlotTitleFontSize')}
@@ -733,6 +751,9 @@ def plot_projection_comparison(
 
         ax = plt.subplot(subplots[2], projection=projection)
         _plot_panel(ax, diffTitle, diffArray, **dictDiff)
+
+    if has_two_line_title:
+        fig.subplots_adjust(top=0.84)
 
     if fileout is not None:
         savefig(fileout, config)

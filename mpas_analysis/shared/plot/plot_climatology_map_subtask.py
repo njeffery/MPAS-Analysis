@@ -534,8 +534,7 @@ class PlotClimatologyMapSubtask(AnalysisTask):
 
         filePrefix = self.filePrefix
         outFileName = f'{self.plotsDirectory}/{filePrefix}.png'
-        title = f'{self.fieldNameInTitle} ({season}, years ' \
-                f'{self.startYear:04d}-{self.endYear:04d})'
+        title = self._build_plot_title(season)
         plot_global_comparison(config,
                                lonTarg,
                                latTarg,
@@ -614,8 +613,7 @@ class PlotClimatologyMapSubtask(AnalysisTask):
 
         filePrefix = self.filePrefix
         outFileName = f'{self.plotsDirectory}/{filePrefix}.png'
-        title = f'{self.fieldNameInTitle} ({season}, years ' \
-                f'{self.startYear:04d}-{self.endYear:04d})'
+        title = self._build_plot_title(season)
 
         if config.has_option(configSectionName, 'titleFontSize'):
             titleFontSize = config.getint(configSectionName, 'titleFontSize')
@@ -675,6 +673,18 @@ class PlotClimatologyMapSubtask(AnalysisTask):
             thumbnailDescription=self.thumbnailDescription,
             imageDescription=caption,
             imageCaption=caption)
+
+    def _build_plot_title(self, season):
+        """Compose a title with season/years always on the first line."""
+        season_years = f'({season}, years {self.startYear:04d}-{self.endYear:04d})'
+        if self.fieldNameInTitle is None:
+            return season_years
+
+        if '\n' in self.fieldNameInTitle:
+            first_line, second_line = self.fieldNameInTitle.split('\n', 1)
+            return f'{first_line} {season_years}\n{second_line}'
+
+        return f'{self.fieldNameInTitle} {season_years}'
 
     def _mask_with_thresholds(self, field):
         if self.maskMinThreshold is not None or \

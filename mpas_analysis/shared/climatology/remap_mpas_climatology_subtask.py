@@ -25,6 +25,7 @@ from mpas_analysis.shared.io.utility import build_config_full_path, \
 from mpas_analysis.shared.io import write_netcdf_with_fill
 
 from mpas_analysis.shared.climatology.climatology import get_remapper, \
+    _descriptor_mesh_name, \
     get_masked_mpas_climatology_file_name, \
     get_remapped_mpas_climatology_file_name, \
     get_climatology_op_directory
@@ -411,15 +412,18 @@ class RemapMpasClimatologySubtask(AnalysisTask):
         for comparisonGridName in self.comparisonDescriptors:
             comparisonDescriptor = \
                 self.comparisonDescriptors[comparisonGridName]
-            self.comparisonGridName = comparisonDescriptor.mesh_name
+            self.comparisonGridName = _descriptor_mesh_name(
+                comparisonDescriptor)
             meshName = config.get('input', 'mpasMeshName')
-            if self.vertices:
-                mpasDescriptor = MpasVertexMeshDescriptor(
+            descriptorClass = (MpasVertexMeshDescriptor if self.vertices
+                               else MpasCellMeshDescriptor)
+            try:
+                mpasDescriptor = descriptorClass(
                     self.meshFilename, mesh_name=meshName)
-            else:
-                mpasDescriptor = MpasCellMeshDescriptor(
-                    self.meshFilename, mesh_name=meshName)
-            self.mpasMeshName = mpasDescriptor.mesh_name
+            except TypeError:
+                mpasDescriptor = descriptorClass(
+                    self.meshFilename, meshName=meshName)
+            self.mpasMeshName = _descriptor_mesh_name(mpasDescriptor)
 
             self.remappers[comparisonGridName] = get_remapper(
                 config=config, sourceDescriptor=mpasDescriptor,
@@ -447,7 +451,7 @@ class RemapMpasClimatologySubtask(AnalysisTask):
             comparisonDescriptor = \
                 self.comparisonDescriptors[comparisonGridName]
             comparisonFullMeshNames[comparisonGridName] = \
-                comparisonDescriptor.mesh_name
+                _descriptor_mesh_name(comparisonDescriptor)
 
         keys = []
         for season in self.seasons:

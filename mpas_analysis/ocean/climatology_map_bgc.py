@@ -100,6 +100,8 @@ class ClimatologyMapBGC(AnalysisTask):
             fieldSectionName = '{}_{}'.format(sectionName, fieldName)
             prefix = config.get(fieldSectionName, 'filePrefix')
             mpasFieldName = '{}{}'.format(prefix, fieldName)
+            observationsLabel = config.get(fieldSectionName,
+                                           'observationsLabel')
 
             # CO2 flux, Fe flux and pCO2 has no vertical levels, throws error if you try
             # to select any. Can add any other flux-like variables to this
@@ -133,19 +135,24 @@ class ClimatologyMapBGC(AnalysisTask):
                 iselValues=iselValues,
                 subtaskName='remapMpasClimatology_{}'.format(fieldName))
 
-            if controlConfig is None:
+            obsSubdirectoryOption = '{}Subdirectory'.format(fieldName)
+            hasObservations = (
+                controlConfig is None and
+                observationsLabel != 'None' and
+                fieldName in obsFileDict and
+                config.has_option('oceanObservations', obsSubdirectoryOption))
+
+            if hasObservations:
                 refTitleLabel = 'Observations'
                 if preindustrial and 'DIC' in fieldName:
                     refTitleLabel += ' (Preindustrial)'
 
                 observationsDirectory = build_obs_path(
-                    config, 'ocean', '{}Subdirectory'.format(fieldName))
+                    config, 'ocean', obsSubdirectoryOption)
 
                 obsFileName = "{}/{}".format(observationsDirectory,
                                              obsFileDict[fieldName])
 
-                observationsLabel = config.get(fieldSectionName,
-                                               'observationsLabel')
                 refFieldName = fieldName
                 outFileLabel = fieldName + observationsLabel
 
@@ -168,6 +175,14 @@ class ClimatologyMapBGC(AnalysisTask):
                 # Currently, this is just with GLODAP.
                 if observationsLabel == 'GLODAPv2':
                     diffTitleLabel += ' (Compared to ANN)'
+            elif controlConfig is None:
+                remapObservationsSubtask = None
+                refTitleLabel = None
+                refFieldName = None
+                outFileLabel = fieldName
+                diffTitleLabel = None
+                galleryLabel = config.get(fieldSectionName, 'galleryLabel')
+                galleryName = galleryLabel
             else:
                 remapObservationsSubtask = None
                 controlRunName = controlConfig.get('runs', 'mainRunName')

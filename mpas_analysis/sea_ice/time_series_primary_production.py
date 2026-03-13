@@ -162,6 +162,7 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
 
         movingAveragePoints = config.getint(sectionName,
                                             'movingAveragePoints')
+        titleFontSize = config.getint(sectionName, 'titleFontSize')
 
         outputDirectory = build_config_full_path(config, 'output',
                                                  'timeseriesSubdirectory')
@@ -189,6 +190,8 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
                 dsTimeSeriesRef[hemisphere] = xr.open_dataset(inFileName)
 
         xLabel = 'Time [years]'
+        startYear = config.getint('timeSeries', 'startYear')
+        endYear = config.getint('timeSeries', 'endYear')
 
         galleryGroup = 'Time Series'
         groupLink = 'timeseries'
@@ -208,8 +211,10 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
             self.logger.info('   Load primary production data from {}'.format(
                 outFileName))
 
-            monthValues = np.arange(1, 13)
-            xArrays = [dsRegional.Time.values]
+            # Plot monthly means at month midpoints on a decimal-year axis.
+            nTime = dsRegional.sizes['Time']
+            timeYears = startYear + (np.arange(nTime) + 0.5) / 12.
+            xArrays = [timeYears]
             yArrays = [dsRegional.primaryProduction.values]
             lineStyles = ['-']
             lineWidths = [2.5]
@@ -262,6 +267,7 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
             ax.set_xlabel(xLabel, fontsize=12)
             ax.set_ylabel(units, fontsize=12)
             ax.set_title(title, fontsize=titleFontSize)
+            ax.set_xlim(startYear, endYear + 1)
             ax.legend(loc='best')
             ax.grid(True, alpha=0.3)
             
@@ -274,6 +280,7 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
             caption = 'Time series of {}'.format(title)
             write_image_xml(
                 config, filePrefix, componentName='Sea Ice',
+                componentSubdirectory='sea_ice',
                 tagDict=None,
                 imageDescription=caption,
                 imageCaption=caption,
@@ -320,10 +327,11 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
                 dsTimeSeries[hemisphere] = xr.open_dataset(outFileName)
                 continue
 
-            # Open all time series files
-            ds = open_mpas_dataset(fileName=self.inputFiles,
+            # Open combined monthly time series produced by MpasTimeSeriesTask
+            ds = open_mpas_dataset(fileName=self.inputFile,
                                    calendar=calendar,
-                                   timeVariableNames='xtime')
+                                   timeVariableNames=['xtime_startMonthly',
+                                                      'xtime_endMonthly'])
 
             # Compute total hemispheric integrated primary production
             # in mg d-1, then convert to Tg yr-1

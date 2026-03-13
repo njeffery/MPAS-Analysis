@@ -35,6 +35,14 @@ from mpas_analysis.shared.climatology.comparison_descriptors import \
     get_comparison_descriptor, known_comparison_grids
 
 
+def _descriptor_mesh_name(descriptor):
+    if hasattr(descriptor, 'mesh_name'):
+        return descriptor.mesh_name
+    if hasattr(descriptor, 'meshName'):
+        return descriptor.meshName
+    raise AttributeError('Descriptor has neither mesh_name nor meshName')
+
+
 def get_remapper(config, sourceDescriptor, comparisonDescriptor,
                  mappingFilePrefix, method, logger=None, vertices=False):
     """
@@ -84,10 +92,10 @@ def get_remapper(config, sourceDescriptor, comparisonDescriptor,
         # we need to remap because the grids don't match
 
         if vertices:
-            srcMeshName = f'{sourceDescriptor.mesh_name}_vertices'
+            srcMeshName = f'{_descriptor_mesh_name(sourceDescriptor)}_vertices'
         else:
-            srcMeshName = sourceDescriptor.mesh_name
-        destMeshName = comparisonDescriptor.mesh_name
+            srcMeshName = _descriptor_mesh_name(sourceDescriptor)
+        destMeshName = _descriptor_mesh_name(comparisonDescriptor)
 
         mappingBaseName = \
             f'{mappingFilePrefix}_{srcMeshName}_to_{destMeshName}_{method}.nc'
@@ -689,7 +697,8 @@ def _matches_comparison(obsDescriptor, comparisonDescriptor):
             isinstance(comparisonDescriptor, ProjectionGridDescriptor):
         # pretty hard to determine if projections are the same, so we'll rely
         # on the grid names
-        match = obsDescriptor.mesh_name == comparisonDescriptor.mesh_name and \
+        match = _descriptor_mesh_name(obsDescriptor) == \
+            _descriptor_mesh_name(comparisonDescriptor) and \
                 len(obsDescriptor.x) == len(comparisonDescriptor.x) and \
                 len(obsDescriptor.y) == len(comparisonDescriptor.y) and \
                 numpy.all(numpy.isclose(obsDescriptor.x,

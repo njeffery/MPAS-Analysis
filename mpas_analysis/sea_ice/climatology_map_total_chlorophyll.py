@@ -118,16 +118,26 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
                     image_description = (
                         f'{season} {hemisphere_long} Sea-Ice Total '
                         f'Chlorophyll ({data_range} mg Chla m$^{{-2}}$)')
-                    field_name_in_title = (
-                        f'Total chlorophyll ({data_range} mg Chla m$^{{-2}}$)')
                 else:
                     image_description = (
                         f'{season} {hemisphere_long} Sea-Ice Total Chlorophyll')
-                    field_name_in_title = 'Total chlorophyll'
+                field_name_in_title = 'Total chlorophyll'
 
-                image_caption = (
-                    f'{image_description}. <br> Observations: '
-                    'Jeffery et al. 2020')
+                if data_range:
+                    field_name_in_title = (
+                        'Total chlorophyll\n'
+                        f'Observed bounds: {data_range} mg Chla m$^{{-2}}$ '
+                        '[Jeffery et al. 2020]')
+
+                if data_range:
+                    image_caption = (
+                        f'{image_description}. <br> Observed bounds: '
+                        f'{data_range} mg Chla m$^{{-2}}$ '
+                        '[Jeffery et al. 2020]')
+                else:
+                    image_caption = (
+                        f'{image_description}. <br> Reference: observed '
+                        'range reported in [Jeffery et al. 2020]')
 
                 subtask.set_plot_info(
                     outFileLabel=f'{field_name}{hemisphere}',

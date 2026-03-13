@@ -9,23 +9,15 @@
 # distributed with this code, or at
 # https://raw.githubusercontent.com/MPAS-Dev/MPAS-Analysis/main/LICENSE
 
-import xarray as xr
-from pyremap import LatLonGridDescriptor
-
 from mpas_analysis.shared import AnalysisTask
 
-from mpas_analysis.shared.climatology import RemapMpasClimatologySubtask, \
-    RemapObservedClimatologySubtask
+from mpas_analysis.shared.climatology import RemapMpasClimatologySubtask
 
 from mpas_analysis.shared.plot import PlotClimatologyMapSubtask
 
-from mpas_analysis.shared.io.utility import build_obs_path
-
 
 class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
-    """
-    An analysis task for comparison of sea ice primary production against
-    observations
+    """An analysis task for plotting sea ice primary production climatologies
     """
     # Authors
     # -------
@@ -54,7 +46,7 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
 
         fieldName = 'seaIcePrimaryProduction'
 
-        tags = ['climatology', 'horizontalMap', fieldName, 'publicObs', 'BGC']
+        tags = ['climatology', 'horizontalMap', fieldName, 'BGC']
         if hemisphere == 'NH':
             tags = tags + ['arctic']
         else:
@@ -101,23 +93,7 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
             seasons=seasons,
             iselValues=iselValues)
 
-        if controlConfig is None:
-            self._add_obs_tasks(seasons, comparisonGridNames, hemisphere,
-                                hemisphereLong, remapClimatologySubtask,
-                                mpasFieldName)
-        else:
-            self._add_ref_tasks(seasons, comparisonGridNames, hemisphere,
-                                hemisphereLong, remapClimatologySubtask,
-                                controlConfig, mpasFieldName)
-
-    def _add_obs_tasks(self, seasons, comparisonGridNames, hemisphere,
-                       hemisphereLong, remapClimatologySubtask,
-                       mpasFieldName):
-        config = self.config
-        obsFieldName = 'primaryProduction'
-        sectionName = self.taskName
-
-        # Season and hemisphere-specific data ranges
+        # Season and hemisphere-specific observed-range annotations
         season_ranges = {
             'ANN': {'NH': None, 'SH': None},
             'JFM': {'NH': '0-58', 'SH': '0-12'},
@@ -130,150 +106,76 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
             'SON': {'NH': None, 'SH': None},
         }
 
-        observationPrefixes = config.getexpression(sectionName,
-                                                   'observationPrefixes')
-        for prefix in observationPrefixes:
+        if hemisphere == 'NH':
+            obsCitation = 'Leu et al. 2015'
+        else:
+            obsCitation = 'Arrigo et al. 2010'
+
+        ref_title_label = None
+        ref_field_name = None
+        diff_title_label = None
+        if controlConfig is not None:
+            controlRunName = controlConfig.get('runs', 'mainRunName')
+            ref_title_label = 'Control: {}'.format(controlRunName)
+            ref_field_name = mpasFieldName
+            diff_title_label = 'Main - Control'
+
+        for comparisonGridName in comparisonGridNames:
             for season in seasons:
                 dataRange = season_ranges.get(season, {}).get(hemisphere)
-                
-                observationTitleLabel = \
-                    'Observations ({})'.format(prefix)
-
-                obsFileName = build_obs_path(
-                    config, 'seaIce',
-                    relativePathOption='primaryProduction{}{}_{}'.format(
-                        prefix, hemisphere, season),
-                    relativePathSection=sectionName)
-
-                remapObservationsSubtask = RemapObservedClimatologySubtask(
-                    parentTask=self, seasons=[season],
-                    fileName=obsFileName,
-                    outFilePrefix='{}{}{}_{}'.format(
-                        obsFieldName, prefix, hemisphere, season),
-                    comparisonGridNames=comparisonGridNames,
-                    subtaskName='remapObservations_{}{}'.format(
-                        prefix, season))
-                self.add_subtask(remapObservationsSubtask)
-                for comparisonGridName in comparisonGridNames:
-
-                    if dataRange:
-                        imageDescription = \
-                            '{} {} Sea-Ice Primary Production ({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
-                                season, hemisphereLong, dataRange)
-                        fieldNameWithRange = 'Sea ice primary production ({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
-                            dataRange)
-                    else:
-                        imageDescription = \
-                            '{} {} Sea-Ice Primary Production'.format(
-                                season, hemisphereLong)
-                        fieldNameWithRange = 'Sea ice primary production'
-                    
-                    # observational citation by hemisphere
-                    if hemisphere == 'NH':
-                        obsCitation = 'Leu et al. 2015'
-                    else:
-                        obsCitation = 'Arrigo et al. 2010'
-
-                    imageCaption = \
-                        '{}. <br> Observations: {} ({})'.format(
-                            imageDescription, prefix, obsCitation)
-                    galleryGroup = \
-                        '{}-Hemisphere Sea-Ice Primary Production'.format(
-                            hemisphereLong)
-                    # make a new subtask for this season and comparison
-                    # grid
-
-                    subtaskName = f'plot{season}_{comparisonGridName}_{prefix}'
-
-                    subtask = PlotClimatologyMapSubtask(
-                        parentTask=self, season=season,
-                        comparisonGridName=comparisonGridName,
-                        remapMpasClimatologySubtask=remapClimatologySubtask,
-                        remapObsClimatologySubtask=remapObservationsSubtask,
-                        subtaskName=subtaskName)
-
-                    subtask.set_plot_info(
-                        outFileLabel='primaryProduction{}{}'.format(prefix,
-                                                                    hemisphere),
-                        fieldNameInTitle=fieldNameWithRange,
-                        mpasFieldName=mpasFieldName,
-                        refFieldName=obsFieldName,
-                        refTitleLabel=observationTitleLabel,
-                        diffTitleLabel='Model - Observations',
-                        unitsLabel=r'mg m$^{-2}$ d$^{-1}$',
-                        imageCaption=imageCaption,
-                        galleryGroup=galleryGroup,
-                        groupSubtitle=None,
-                        groupLink='{}_primaryprod'.format(hemisphere.lower()),
-                        galleryName='Observations: {}'.format(prefix),
-                        extend='both',
-                        prependComparisonGrid=False)
-
-                    self.add_subtask(subtask)
-
-    def _add_ref_tasks(self, seasons, comparisonGridNames, hemisphere,
-                       hemisphereLong, remapClimatologySubtask,
-                       controlConfig, mpasFieldName):
-
-        controlRunName = controlConfig.get('runs', 'mainRunName')
-        galleryName = None
-        refTitleLabel = 'Control: {}'.format(controlRunName)
-
-        # Season and hemisphere-specific data ranges
-        season_ranges = {
-            'ANN': {'NH': None, 'SH': None},
-            'JFM': {'NH': '0-58', 'SH': '0-12'},
-            'AMJ': {'NH': '0-30', 'SH': '0-5'},
-            'JAS': {'NH': '0-28', 'SH': '0-60'},
-            'OND': {'NH': None, 'SH': '0-140'},
-            'DJF': {'NH': None, 'SH': None},
-            'MAM': {'NH': None, 'SH': None},
-            'JJA': {'NH': None, 'SH': None},
-            'SON': {'NH': None, 'SH': None},
-        }
-
-        for season in seasons:
-            dataRange = season_ranges.get(season, {}).get(hemisphere)
-            
-            for comparisonGridName in comparisonGridNames:
 
                 if dataRange:
-                    imageDescription = \
-                        '{} {} Sea-Ice Primary Production ({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
-                            season, hemisphereLong, dataRange)
-                    fieldNameWithRange = 'Sea ice primary production ({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
-                        dataRange)
+                    imageDescription = (
+                        '{} {} Sea-Ice Primary Production '
+                        '({} mg m$^{{-2}}$ d$^{{-1}}$)'.format(
+                            season, hemisphereLong, dataRange))
                 else:
-                    imageDescription = \
+                    imageDescription = (
                         '{} {} Sea-Ice Primary Production'.format(
-                            season, hemisphereLong)
-                    fieldNameWithRange = 'Sea ice primary production'
-                
-                imageCaption = imageDescription
-                galleryGroup = \
-                    '{}-Hemisphere Sea-Ice Primary Production'.format(
-                        hemisphereLong)
-                # make a new subtask for this season and comparison
-                # grid
+                            season, hemisphereLong))
+
+                fieldNameInTitle = 'Sea ice primary production'
+                if dataRange:
+                    fieldNameInTitle = (
+                        'Sea ice primary production\n'
+                        'Observed bounds: {} mg m$^{{-2}}$ d$^{{-1}}$ [{}]'.format(
+                            dataRange, obsCitation))
+
+                if dataRange:
+                    imageCaption = (
+                        '{}. <br> Observed bounds: {} mg m$^{{-2}}$ '
+                        'd$^{{-1}}$ [{}]'.format(
+                            imageDescription, dataRange, obsCitation))
+                else:
+                    imageCaption = (
+                        '{}. <br> Reference: observed range reported '
+                        'in [{}]'.format(imageDescription, obsCitation))
+
+                subtaskName = 'plot_seaIcePrimaryProduction_{}_{}'.format(
+                    season, comparisonGridName)
+
                 subtask = PlotClimatologyMapSubtask(
                     parentTask=self, season=season,
                     comparisonGridName=comparisonGridName,
                     remapMpasClimatologySubtask=remapClimatologySubtask,
-                    controlConfig=controlConfig)
+                    remapObsClimatologySubtask=None,
+                    controlConfig=controlConfig,
+                    subtaskName=subtaskName)
 
                 subtask.set_plot_info(
                     outFileLabel='primaryProduction{}'.format(hemisphere),
-                    fieldNameInTitle=fieldNameWithRange,
+                    fieldNameInTitle=fieldNameInTitle,
                     mpasFieldName=mpasFieldName,
-                    refFieldName=mpasFieldName,
-                    refTitleLabel=refTitleLabel,
-                    diffTitleLabel='Main - Control',
+                    refFieldName=ref_field_name,
+                    refTitleLabel=ref_title_label,
+                    diffTitleLabel=diff_title_label,
                     unitsLabel=r'mg m$^{-2}$ d$^{-1}$',
                     imageCaption=imageCaption,
-                    galleryGroup=galleryGroup,
+                    galleryGroup='{}-Hemisphere Sea-Ice Primary Production'.format(
+                        hemisphereLong),
                     groupSubtitle=None,
                     groupLink='{}_primaryprod'.format(hemisphere.lower()),
-                    galleryName=galleryName,
+                    galleryName='Sea ice primary production',
                     extend='both',
                     prependComparisonGrid=False)
 
