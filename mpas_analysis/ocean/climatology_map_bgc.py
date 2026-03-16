@@ -5,6 +5,8 @@
 # Additional copyright and license information can be found in the LICENSE file
 # distributed with this code, or at http://mpas-dev.github.com/license.html
 #
+import os
+
 import xarray as xr
 
 from pyremap import LatLonGridDescriptor
@@ -103,10 +105,11 @@ class ClimatologyMapBGC(AnalysisTask):
             observationsLabel = config.get(fieldSectionName,
                                            'observationsLabel')
 
-            # CO2 flux, Fe flux and pCO2 has no vertical levels, throws error if you try
-            # to select any. Can add any other flux-like variables to this
-            # list.
-            if fieldName not in ['CO2_gas_flux', 'pCO2surface', 'FeSurfaceFlux']:
+            # 2-D fields have no vertical levels and should not be indexed by
+            # nVertLevels.
+            if fieldName not in ['CO2_gas_flux', 'pCO2surface',
+                                 'FeSurfaceFlux',
+                                 'avgOceanSurfaceFeDissolved']:
                 iselValues = {'nVertLevels': 0}
             else:
                 iselValues = None
@@ -153,28 +156,42 @@ class ClimatologyMapBGC(AnalysisTask):
                 obsFileName = "{}/{}".format(observationsDirectory,
                                              obsFileDict[fieldName])
 
-                refFieldName = fieldName
-                outFileLabel = fieldName + observationsLabel
+                # For fields like Chl, allow model-only mode when
+                # observational files are unavailable on a given system.
+                if not os.path.exists(obsFileName):
+                    print('Warning: observation file for {} not found at {}. '
+                          'Proceeding in model-only mode.'.format(
+                              fieldName, obsFileName))
+                    remapObservationsSubtask = None
+                    refTitleLabel = None
+                    refFieldName = None
+                    outFileLabel = fieldName
+                    diffTitleLabel = None
+                    galleryLabel = config.get(fieldSectionName, 'galleryLabel')
+                    galleryName = galleryLabel
+                else:
+                    refFieldName = fieldName
+                    outFileLabel = fieldName + observationsLabel
 
-                galleryLabel = config.get(fieldSectionName, 'galleryLabel')
-                galleryName = '{}  (Compared to {})'.format(galleryLabel,
-                                                            observationsLabel)
+                    galleryLabel = config.get(fieldSectionName, 'galleryLabel')
+                    galleryName = '{}  (Compared to {})'.format(
+                        galleryLabel, observationsLabel)
 
-                remapObservationsSubtask = RemapObservedBGCClimatology(
-                    parentTask=self, seasons=seasons, fileName=obsFileName,
-                    outFilePrefix=refFieldName,
-                    comparisonGridNames=comparisonGridNames,
-                    subtaskName='remapObservations_{}'.format(fieldName))
-                self.add_subtask(remapObservationsSubtask)
+                    remapObservationsSubtask = RemapObservedBGCClimatology(
+                        parentTask=self, seasons=seasons, fileName=obsFileName,
+                        outFilePrefix=refFieldName,
+                        comparisonGridNames=comparisonGridNames,
+                        subtaskName='remapObservations_{}'.format(fieldName))
+                    self.add_subtask(remapObservationsSubtask)
 
-                diffTitleLabel = 'Model - Observations'
+                    diffTitleLabel = 'Model - Observations'
 
-                # Certain BGC observations are only available at annual
-                # resolution. Need to ensure that the user is aware that their
-                # seasonal or monthly climatology is being compared to ANN.
-                # Currently, this is just with GLODAP.
-                if observationsLabel == 'GLODAPv2':
-                    diffTitleLabel += ' (Compared to ANN)'
+                    # Certain BGC observations are only available at annual
+                    # resolution. Need to ensure that the user is aware that
+                    # their seasonal or monthly climatology is being compared
+                    # to ANN. Currently, this is just with GLODAP.
+                    if observationsLabel == 'GLODAPv2':
+                        diffTitleLabel += ' (Compared to ANN)'
             elif controlConfig is None:
                 remapObservationsSubtask = None
                 refTitleLabel = None
@@ -203,9 +220,22 @@ class ClimatologyMapBGC(AnalysisTask):
                         subtaskName='plot{}_{}_{}'.format(
                             fieldName, season, comparisonGridName))
 
+                    titleLabel = config.get(fieldSectionName, 'titleLabel') \
+                        if config.has_option(fieldSectionName, 'titleLabel') \
+                        else fieldName
+                    titleReference = config.get(
+                        fieldSectionName, 'titleReference') \
+                        if config.has_option(fieldSectionName,
+                                             'titleReference') \
+                        else None
+                    if titleReference:
+                        fieldNameInTitle = f'{titleLabel}\n{titleReference}'
+                    else:
+                        fieldNameInTitle = titleLabel
+
                     subtask.set_plot_info(
                         outFileLabel=outFileLabel,
-                        fieldNameInTitle=fieldName,
+                        fieldNameInTitle=fieldNameInTitle,
                         mpasFieldName=plotField,
                         refFieldName=refFieldName,
                         refTitleLabel=refTitleLabel,
@@ -342,6 +372,11 @@ class RemapBGCClimatology(RemapMpasClimatologySubtask):
         # Convert O2 from mmol/m3 to mL/L for comparison to WOA product
         elif fieldName == 'timeMonthly_avg_ecosysTracers_O2':
             conversion = 22.391 / 10**3
+            climatology[fieldName] = conversion * climatology[fieldName]
+        # Convert dissolved Fe from mmol/m3 to nM (1 mmol/m3 = 1e-3 mol/m3;
+        # 1 nM = 1e-9 mol/L = 1e-6 mol/m3; factor = 1e-3/1e-6 = 1e3)
+        elif fieldName == 'timeMonthly_avg_avgOceanSurfaceFeDissolved':
+            conversion = 10**3
             climatology[fieldName] = conversion * climatology[fieldName]
         return climatology
 

@@ -34,7 +34,7 @@ from mpas_analysis.shared.projection import get_cartopy_projection
 
 
 def _set_two_line_suptitle(fig, config, title, titleFontSize=None, y=0.95,
-                           subtitleScale=0.8, subtitleGap=0.03):
+                           subtitleScale=0.8, subtitleGap=0.055):
     """Set a figure title with an optional smaller second line."""
     if title is None:
         return False
@@ -297,6 +297,7 @@ def plot_global_comparison(
         lineWidth=1,
         lineColor='black',
         maxTitleLength=None,
+        pointObservations=None,
         extend='both'):
     """
     Plots a data set as a longitude/latitude map.
@@ -364,13 +365,17 @@ def plot_global_comparison(
     extend : {'neither', 'both', 'min', 'max'}, optional
         Determines the ``contourf``-coloring of values that are outside the
         range of the levels provided if using an indexed colormap.
+
+    pointObservations : dict or None, optional
+        Optional point observations to overlay on the model panel. Should
+        contain ``lon``, ``lat`` and ``values`` arrays.
     """
     # Authors
     # -------
     # Xylar Asay-Davis, Milena Veneziani
 
     def _plot_panel(ax, title, array, colormap, norm, levels, ticks, contours,
-                    lineWidth, lineColor, **kwargs):
+                    lineWidth, lineColor, pointObservations=None, **kwargs):
 
         ax.set_extent(extent, crs=projection)
 
@@ -396,6 +401,12 @@ def plot_global_comparison(
                                      transform=projection, zorder=1)
 
         _add_land_lakes_coastline(ax)
+
+        if pointObservations is not None:
+            ax.scatter(pointObservations['lon'], pointObservations['lat'],
+                       c=pointObservations['values'], cmap=colormap,
+                       norm=norm, transform=projection, zorder=6, s=20,
+                       edgecolors='k', linewidths=0.05)
 
         if contours is not None:
             matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
@@ -459,7 +470,8 @@ def plot_global_comparison(
             height_ratios=[1.0, 0.18, 1.0, 0.08, 1.0])
 
         ax = fig.add_subplot(gs[0, 0], projection=projection)
-        _plot_panel(ax, modelTitle, modelArray, **dictModelRef)
+        _plot_panel(ax, modelTitle, modelArray,
+                pointObservations=pointObservations, **dictModelRef)
         axes.append(ax)
 
         ax = fig.add_subplot(gs[2, 0], projection=projection)
@@ -471,7 +483,8 @@ def plot_global_comparison(
         axes.append(ax)
     else:
         ax = plt.subplot(subplots[0], projection=projection)
-        _plot_panel(ax, modelTitle, modelArray, **dictModelRef)
+        _plot_panel(ax, modelTitle, modelArray,
+                    pointObservations=pointObservations, **dictModelRef)
         axes.append(ax)
 
         if refArray is not None:
@@ -517,6 +530,7 @@ def plot_projection_comparison(
         defaultFontSize=None,
         vertical=False,
         maxTitleLength=None,
+        pointObservations=None,
         extend='both'):
     """
     Plots a data set as a projection map.
@@ -586,6 +600,10 @@ def plot_projection_comparison(
     extend : {'neither', 'both', 'min', 'max'}, optional
         Determines the ``contourf``-coloring of values that are outside the
         range of the levels provided if using an indexed colormap.
+
+    pointObservations : dict or None, optional
+        Optional point observations to overlay on the model panel. Should
+        contain ``lon``, ``lat`` and ``values`` arrays.
     """
     # Authors
     # -------
@@ -617,7 +635,8 @@ def plot_projection_comparison(
         return arrows
 
     def _plot_panel(ax, title, array, colormap, norm, levels, ticks, contours,
-                    lineWidth, lineColor, arrowSpacing, arrowWidth):
+                    lineWidth, lineColor, arrowSpacing, arrowWidth,
+                    pointObservations=None):
 
         title = limit_title(title, maxTitleLength)
         ax.set_title(title, **plottitle_font)
@@ -674,6 +693,12 @@ def plot_projection_comparison(
                 ax.contour(x_center, y_center, array, levels=[0.],
                            colors=lineColor, linewidths=1.5 * lineWidth)
 
+        if pointObservations is not None:
+            ax.scatter(pointObservations['lon'], pointObservations['lat'],
+                       c=pointObservations['values'], cmap=colormap,
+                       norm=norm, transform=cartopy.crs.PlateCarree(),
+                       zorder=6, s=80, edgecolors='k', linewidths=0.05)
+
         # create an axes on the right side of ax. The width of cax will be 5%
         # of ax and the padding between cax and ax will be fixed at 0.05 inch.
         divider = make_axes_locatable(ax)
@@ -723,7 +748,8 @@ def plot_projection_comparison(
     fig = plt.figure(figsize=figsize, dpi=dpi)
 
     has_two_line_title = _set_two_line_suptitle(
-        fig, config, title, titleFontSize=titleFontSize, y=0.95)
+        fig, config, title, titleFontSize=titleFontSize, y=0.95,
+        subtitleGap=0.04)
 
     plottitle_font = {'size': config.get('plot',
                                          'threePanelPlotTitleFontSize')}
@@ -743,7 +769,8 @@ def plot_projection_comparison(
     extent = [x[0], x[-1], y[0], y[-1]]
 
     ax = plt.subplot(subplots[0], projection=projection)
-    _plot_panel(ax, modelTitle, modelArray, **dictModelRef)
+    _plot_panel(ax, modelTitle, modelArray,
+                pointObservations=pointObservations, **dictModelRef)
 
     if refArray is not None:
         ax = plt.subplot(subplots[1], projection=projection)

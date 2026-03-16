@@ -979,7 +979,14 @@ def get_editable_install_dir(package_name):
 
     direct_url = Distribution.from_name(package_name).read_text(
         'direct_url.json')
-    contents = json.loads(direct_url)
+    if direct_url is None:
+        return None
+
+    try:
+        contents = json.loads(direct_url)
+    except json.JSONDecodeError:
+        return None
+
     pkg_is_editable = contents.get("dir_info", {}).get("editable", False)
     if pkg_is_editable and 'url' in contents:
         url = contents['url']

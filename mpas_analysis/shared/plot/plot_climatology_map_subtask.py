@@ -9,6 +9,8 @@
 # distributed with this code, or at
 # https://raw.githubusercontent.com/MPAS-Dev/MPAS-Analysis/main/LICENSE
 
+import os
+
 import xarray as xr
 import numpy as np
 
@@ -481,16 +483,21 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         else:
             raise ValueError(f'Unexpected component: {self.componentName}')
 
+        pointObservations = self._get_point_observations()
+
         if self.comparisonGridName == 'latlon':
             self._plot_latlon(remappedModelClimatology, remappedRefClimatology,
-                              componentName, componentSubdirectory)
+                              componentName, componentSubdirectory,
+                              pointObservations=pointObservations)
         else:
             self._plot_projection(remappedModelClimatology,
                                   remappedRefClimatology,
-                                  componentName, componentSubdirectory)
+                                  componentName, componentSubdirectory,
+                                  pointObservations=pointObservations)
 
     def _plot_latlon(self, remappedModelClimatology, remappedRefClimatology,
-                     componentName, componentSubdirectory):
+                     componentName, componentSubdirectory,
+                     pointObservations=None):
         """ plotting a global lat-lon data set """
 
         season = self.season
@@ -550,6 +557,7 @@ class PlotClimatologyMapSubtask(AnalysisTask):
                                cbarlabel=self.unitsLabel,
                                titleFontSize=titleFontSize,
                                defaultFontSize=defaultFontSize,
+                               pointObservations=pointObservations,
                                extend=self.extend)
 
         caption = f'{season} {self.imageCaption}'
@@ -568,7 +576,8 @@ class PlotClimatologyMapSubtask(AnalysisTask):
 
     def _plot_projection(self, remappedModelClimatology,
                          remappedRefClimatology,
-                         componentName, componentSubdirectory):
+                         componentName, componentSubdirectory,
+                         pointObservations=None):
         """ plotting a dataset on a projection grid """
 
         season = self.season
@@ -652,6 +661,7 @@ class PlotClimatologyMapSubtask(AnalysisTask):
             cartopyGridFontSize=cartopyGridFontSize,
             defaultFontSize=defaultFontSize,
             vertical=vertical,
+            pointObservations=pointObservations,
             extend=self.extend)
 
         if self.prependComparisonGrid:
@@ -697,6 +707,84 @@ class PlotClimatologyMapSubtask(AnalysisTask):
             field = np.ma.masked_array(field, mask)
 
         return field
+
+    def _get_point_observations(self):
+        """
+        Optionally load point observations from a netCDF file and filter by
+        depth for overlay on map plots.
+        """
+        section = self.configSectionName
+        config = self.config
+
+        if not config.has_option(section, 'pointObservationsFileName'):
+            return None
+
+        fileName = os.path.expanduser(
+            config.get(section, 'pointObservationsFileName'))
+        if not os.path.isabs(fileName):
+            fileName = os.path.abspath(fileName)
+
+        if not os.path.exists(fileName):
+            self.logger.warning(
+                f'Point observations file not found: {fileName}. '
+                'Skipping point-observation overlay.')
+            return None
+
+        lonColumn = config.get(section, 'pointObservationsLonColumn')
+        latColumn = config.get(section, 'pointObservationsLatColumn')
+        depthColumn = config.get(section, 'pointObservationsDepthColumn')
+        valueColumn = config.get(section, 'pointObservationsValueColumn')
+        depthMax = config.getfloat(section, 'pointObservationsDepthMax')
+        scaleFactor = config.getfloat(section,
+                                      'pointObservationsScaleFactor')
+
+        try:
+            ds = xr.open_dataset(fileName)
+        except Exception as error:
+            self.logger.warning(
+                f'Failed to read point observations from {fileName}: '
+                f'{error}. Skipping point-observation overlay.')
+            return None
+
+        required = [lonColumn, latColumn, depthColumn, valueColumn]
+        missing = [var for var in required if var not in ds.data_vars and
+                   var not in ds.coords]
+        if len(missing) > 0:
+            self.logger.warning(
+                f'Point observations file is missing required variables '
+                f'{missing}. Available variables: '
+                f'{list(ds.data_vars)} {list(ds.coords)}. '
+                'Skipping point-observation overlay.')
+            return None
+
+        # Extract coordinates and data variable
+        lon = ds[lonColumn].values
+        lat = ds[latColumn].values
+        depth = ds[depthColumn].values
+        values = ds[valueColumn].values
+
+        # Filter by depth
+        mask = depth < depthMax
+        lon = lon[mask]
+        lat = lat[mask]
+        values = values[mask]
+
+        if len(values) == 0:
+            self.logger.warning(
+                f'No point observations remain after filtering '
+                f'{depthColumn} < {depthMax}. '
+                'Skipping point-observation overlay.')
+            return None
+
+        values = scaleFactor * values.astype(float)
+
+        pointObservations = {
+            'lon': lon.astype(float),
+            'lat': lat.astype(float),
+            'values': values,
+            'label': config.get(section, 'pointObservationsLabel')
+        }
+        return pointObservations
 
 
 def _nans_to_numpy_mask(field):
