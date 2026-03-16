@@ -37,7 +37,7 @@ def add_periodic_lon(ds, lonDim, degrees=True):
     ds = ds.rename({'newLon': lonDim})
 
     # fix the last entry in lon
-    lon = ds[lonDim].values
+    lon = ds[lonDim].values.copy()
     lon[-1] += period
     dims = ds[lonDim].dims
     attrs = ds[lonDim].attrs

@@ -109,7 +109,9 @@ class ClimatologyMapBGC(AnalysisTask):
             # nVertLevels.
             if fieldName not in ['CO2_gas_flux', 'pCO2surface',
                                  'FeSurfaceFlux',
-                                 'avgOceanSurfaceFeDissolved']:
+                                 'avgOceanSurfaceFeDissolved',
+                                 'dust_FLUX_DRY', 'dust_FLUX_WET',
+                                 'dust_FLUX_IN']:
                 iselValues = {'nVertLevels': 0}
             else:
                 iselValues = None
@@ -122,7 +124,7 @@ class ClimatologyMapBGC(AnalysisTask):
             if fieldName == 'Chl':
                 prefix = 'timeMonthly_avg_ecosysTracers_'
                 variableList = [prefix + 'spChl', prefix + 'diatChl',
-                                prefix + 'diazChl', prefix + 'phaeoChl']
+                                prefix + 'diazChl']
                 plotField = 'Chl'
             else:
                 variableList = [mpasFieldName]
@@ -310,24 +312,12 @@ class RemapBGCClimatology(RemapMpasClimatologySubtask):
             spChl = climatology.timeMonthly_avg_ecosysTracers_spChl
             diatChl = climatology.timeMonthly_avg_ecosysTracers_diatChl
             diazChl = climatology.timeMonthly_avg_ecosysTracers_diazChl
-            
-            # Handle case where phaeoChl may not be available
-            if 'timeMonthly_avg_ecosysTracers_phaeoChl' in climatology:
-                phaeoChl = climatology.timeMonthly_avg_ecosysTracers_phaeoChl
-                varsToDrop = ['timeMonthly_avg_ecosysTracers_spChl',
-                              'timeMonthly_avg_ecosysTracers_diatChl',
-                              'timeMonthly_avg_ecosysTracers_diazChl',
-                              'timeMonthly_avg_ecosysTracers_phaeoChl']
-            else:
-                # If phaeoChl is not available, assume it's zero
-                phaeoChl = spChl * 0.
-                varsToDrop = ['timeMonthly_avg_ecosysTracers_spChl',
-                              'timeMonthly_avg_ecosysTracers_diatChl',
-                              'timeMonthly_avg_ecosysTracers_diazChl']
-            
-            climatology['Chl'] = spChl + diatChl + diazChl + phaeoChl
+            varsToDrop = ['timeMonthly_avg_ecosysTracers_spChl',
+                          'timeMonthly_avg_ecosysTracers_diatChl',
+                          'timeMonthly_avg_ecosysTracers_diazChl']
+            climatology['Chl'] = spChl + diatChl + diazChl
             climatology.Chl.attrs['units'] = 'mg m$^{-3}$'
-            climatology.Chl.attrs['description'] = 'Sum of all PFT chlorophyll'
+            climatology.Chl.attrs['description'] = 'Sum of sp+diat+diaz chlorophyll'
             climatology.drop_vars(varsToDrop)
 
         return climatology
@@ -377,6 +367,12 @@ class RemapBGCClimatology(RemapMpasClimatologySubtask):
         # 1 nM = 1e-9 mol/L = 1e-6 mol/m3; factor = 1e-3/1e-6 = 1e3)
         elif fieldName == 'timeMonthly_avg_avgOceanSurfaceFeDissolved':
             conversion = 10**3
+            climatology[fieldName] = conversion * climatology[fieldName]
+        # Convert dust fluxes from kg m-2 s-1 to g m-2 yr-1
+        elif fieldName in ['timeMonthly_avg_dust_FLUX_DRY',
+                           'timeMonthly_avg_dust_FLUX_WET',
+                           'timeMonthly_avg_dust_FLUX_IN']:
+            conversion = 1000. * 365.25 * 24. * 3600.
             climatology[fieldName] = conversion * climatology[fieldName]
         return climatology
 
