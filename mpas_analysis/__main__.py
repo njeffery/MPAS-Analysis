@@ -301,8 +301,8 @@ def build_analysis_list(config, controlConfig):
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='NH', control_config=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIcePrimaryProduction(
-        config=config, mpas_climatology_task=seaIceClimatologyTask,
-        hemisphere='NH', control_config=controlConfig))
+        config=config, mpasClimatologyTask=seaIceClimatologyTask,
+        hemisphere='NH', controlConfig=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIceAreaTendencyThermo(
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='NH', control_config=controlConfig))
@@ -349,12 +349,18 @@ def build_analysis_list(config, controlConfig):
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='SH', control_config=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIcePrimaryProduction(
-        config=config, mpas_climatology_task=seaIceClimatologyTask,
-        hemisphere='SH', control_config=controlConfig))
+        config=config, mpasClimatologyTask=seaIceClimatologyTask,
+        hemisphere='SH', controlConfig=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIceTotalChlorophyll(
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='NH', control_config=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIceTotalChlorophyll(
+        config=config, mpas_climatology_task=seaIceClimatologyTask,
+        hemisphere='SH', control_config=controlConfig))
+    analyses.append(sea_ice.ClimatologyMapSeaIceDissolvedIron(
+        config=config, mpas_climatology_task=seaIceClimatologyTask,
+        hemisphere='NH', control_config=controlConfig))
+    analyses.append(sea_ice.ClimatologyMapSeaIceDissolvedIron(
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='SH', control_config=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIceAerosolImpurities(
