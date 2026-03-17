@@ -148,7 +148,7 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
                     diffTitleLabel=diff_title_label,
                     unitsLabel=r'mg Chla m$^{-2}$',
                     imageCaption=image_caption,
-                    galleryGroup=f'{hemisphere_long}-Hemisphere '
+                    galleryGroup=f'BGC - {hemisphere_long}-Hemisphere '
                                  'Sea-Ice Total Chlorophyll',
                     groupSubtitle=None,
                     groupLink=f'{hemisphere.lower()}_total_chlorophyll',

@@ -138,7 +138,7 @@ class ClimatologyMapSeaIceDissolvedIron(AnalysisTask):
                         diffTitleLabel=diff_title_label,
                         unitsLabel=r'$\mu$mol Iron m$^{-2}$',
                         imageCaption=image_caption,
-                        galleryGroup=f'{hemisphere_long}-Hemisphere '
+                        galleryGroup=f'BGC - {hemisphere_long}-Hemisphere '
                                      'Sea-Ice Dissolved Iron',
                         groupSubtitle=None,
                         groupLink=f'{hemisphere.lower()}_dissolved_iron',

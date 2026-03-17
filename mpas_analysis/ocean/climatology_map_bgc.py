@@ -356,7 +356,7 @@ class RemapBGCClimatology(RemapMpasClimatologySubtask):
             conversion = -1 * (60 * 60 * 24 * 365.25) / 10**3
             climatology[fieldName] = conversion * climatology[fieldName]
         # Convert Fe surface flux from mmol/m2 s to mmol/m2 yr
-        elif fieldName == 'timeMonthly_avg_FeSurfaceFlux':
+        elif fieldName == 'timeMonthly_avg_ecosysTracersSurfaceFlux_FeSurfaceFlux':
             conversion = 365.25 * 24 * 3600  # s->yr
             climatology[fieldName] = conversion * climatology[fieldName]
         # Convert O2 from mmol/m3 to mL/L for comparison to WOA product

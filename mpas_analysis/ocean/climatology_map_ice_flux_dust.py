@@ -132,6 +132,6 @@ class ClimatologyMapIceFluxDust(AnalysisTask):
                     groupSubtitle=None,
                     groupLink='ice_flux_dust',
                     galleryName=None,
-                    configSectionName=None)
+                    configSectionName=sectionName)
 
                 self.add_subtask(subtask)

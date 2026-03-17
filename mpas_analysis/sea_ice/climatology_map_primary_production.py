@@ -171,7 +171,7 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
                     diffTitleLabel=diff_title_label,
                     unitsLabel=r'mg m$^{-2}$ d$^{-1}$',
                     imageCaption=imageCaption,
-                    galleryGroup='{}-Hemisphere Sea-Ice Primary Production'.format(
+                    galleryGroup='BGC - {}-Hemisphere Sea-Ice Primary Production'.format(
                         hemisphereLong),
                     groupSubtitle=None,
                     groupLink='{}_primaryprod'.format(hemisphere.lower()),

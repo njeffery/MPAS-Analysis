@@ -140,7 +140,7 @@ class ClimatologyMapSeaIceAerosolImpurities(AnalysisTask):
                         diffTitleLabel=diff_title_label,
                         unitsLabel=spec['units'],
                         imageCaption=image_caption,
-                        galleryGroup=f'{hemisphere_long}-Hemisphere '
+                        galleryGroup=f'BGC - {hemisphere_long}-Hemisphere '
                                      'Sea-Ice Aerosol Impurities',
                         groupSubtitle=None,
                         groupLink=f'{hemisphere.lower()}_sea_ice_impurities',

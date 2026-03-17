@@ -1301,6 +1301,54 @@
 
   <observation>
     <name>
+      GEOTRACES Dissolved Iron (2015 Version 2)
+    </name>
+    <component>
+      ocean
+    </component>
+    <description>
+      Dissolved iron (2015 Version 2) database of observations with filter
+      sizes ranging from 0.2-0.45 um.
+    </description>
+    <source>
+      [GEOTRACES historical data (BODC)]
+      (https://www.bodc.ac.uk/geotraces/data/historical/)
+    </source>
+    <releasePolicy>
+      Please cite the source publication when using this dataset.
+    </releasePolicy>
+    <references>
+      - [Tagliabue et al. (2012)](https://doi.org/10.5194/bg-9-2333-2012)
+    </references>
+    <bibtex>
+      @article{tagliabue2012global,
+      title={A global compilation of dissolved iron measurements: focus on distributions and processes in the Southern Ocean},
+      author={Tagliabue, Alessandro and Mtshali, T and Aumont, Olivier and Bowie, Andrew R and Klunder, M and Roychoudhury, A N and Swart, S},
+      journal={Biogeosciences},
+      volume={9},
+      pages={2333--2349},
+      year={2012},
+      doi={10.5194/bg-9-2333-2012}
+      }
+    </bibtex>
+    <dataUrls>
+      - https://www.bodc.ac.uk/geotraces/data/historical/
+    </dataUrls>
+    <preprocessing>
+    </preprocessing>
+    <tasks>
+      - climatologyMapBGC
+    </tasks>
+    <subdirectory>
+      Ocean/BGC/Fe
+    </subdirectory>
+    <nameInDocs>
+      geotraces-dissolved-iron
+    </nameInDocs>
+  </observation>
+
+  <observation>
+    <name>
       GLODAPv2
     </name>
     <component>
