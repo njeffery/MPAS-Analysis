@@ -28,6 +28,8 @@ from mpas_analysis.shared.climatology.comparison_descriptors import \
 
 from mpas_analysis.shared.projection import comparison_grid_titles
 
+from mpas_analysis.shared.io.utility import build_obs_path
+
 
 class PlotClimatologyMapSubtask(AnalysisTask):
     """
@@ -722,7 +724,8 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         fileName = os.path.expanduser(
             config.get(section, 'pointObservationsFileName'))
         if not os.path.isabs(fileName):
-            fileName = os.path.abspath(fileName)
+                fileName = build_obs_path(config, self.componentName,
+                                          relativePath=fileName)
 
         if not os.path.exists(fileName):
             self.logger.warning(

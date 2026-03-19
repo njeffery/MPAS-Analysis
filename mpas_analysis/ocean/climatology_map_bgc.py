@@ -368,6 +368,10 @@ class RemapBGCClimatology(RemapMpasClimatologySubtask):
         elif fieldName == 'timeMonthly_avg_avgOceanSurfaceFeDissolved':
             conversion = 10**3
             climatology[fieldName] = conversion * climatology[fieldName]
+            # Clip any slightly-negative values (numerical artefacts from
+            # MARBL diffusion) to a small positive floor so log-scale plots
+            # render them as the minimum colour instead of NaN.
+            climatology[fieldName] = climatology[fieldName].clip(min=1e-6)
         # Convert dust fluxes from kg m-2 s-1 to g m-2 yr-1
         elif fieldName in ['timeMonthly_avg_dust_FLUX_DRY',
                            'timeMonthly_avg_dust_FLUX_WET',
