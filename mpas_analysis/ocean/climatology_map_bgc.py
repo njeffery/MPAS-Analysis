@@ -109,7 +109,6 @@ class ClimatologyMapBGC(AnalysisTask):
             # nVertLevels.
             if fieldName not in ['CO2_gas_flux', 'pCO2surface',
                                  'FeSurfaceFlux',
-                                 'avgOceanSurfaceFeDissolved',
                                  'dust_FLUX_DRY', 'dust_FLUX_WET',
                                  'dust_FLUX_IN']:
                 iselValues = {'nVertLevels': 0}
@@ -126,6 +125,9 @@ class ClimatologyMapBGC(AnalysisTask):
                 variableList = [prefix + 'spChl', prefix + 'diatChl',
                                 prefix + 'diazChl']
                 plotField = 'Chl'
+            elif fieldName == 'Fe':
+                variableList = ['timeMonthly_avg_ecosysTracers_Fe']
+                plotField = 'timeMonthly_avg_ecosysTracers_Fe'
             else:
                 variableList = [mpasFieldName]
                 plotField = mpasFieldName
@@ -365,7 +367,8 @@ class RemapBGCClimatology(RemapMpasClimatologySubtask):
             climatology[fieldName] = conversion * climatology[fieldName]
         # Convert dissolved Fe from mmol/m3 to nM (1 mmol/m3 = 1e-3 mol/m3;
         # 1 nM = 1e-9 mol/L = 1e-6 mol/m3; factor = 1e-3/1e-6 = 1e3)
-        elif fieldName == 'timeMonthly_avg_avgOceanSurfaceFeDissolved':
+        elif fieldName in ['timeMonthly_avg_avgOceanSurfaceFeDissolved',
+                           'timeMonthly_avg_ecosysTracers_Fe']:
             conversion = 10**3
             climatology[fieldName] = conversion * climatology[fieldName]
             # Clip any slightly-negative values (numerical artefacts from
