@@ -73,6 +73,10 @@ class ClimatologyMapIceFluxDust(AnalysisTask):
 
         sectionName = taskName
         hemisphereLong = 'Northern' if hemisphere == 'NH' else 'Southern'
+        if config.has_option(sectionName, 'unitsLabel'):
+            unitsLabel = config.get(sectionName, 'unitsLabel')
+        else:
+            unitsLabel = r'kg m$^{-2}$ s$^{-1}$'
 
         # read in what seasons we want to plot
         seasons = config.getexpression(sectionName, 'seasons')
@@ -126,7 +130,7 @@ class ClimatologyMapIceFluxDust(AnalysisTask):
                     refFieldName=refFieldName,
                     refTitleLabel=refTitleLabel,
                     diffTitleLabel=diffTitleLabel,
-                    unitsLabel=r'kg m$^{-2}$ s$^{-1}$',
+                    unitsLabel=unitsLabel,
                     imageCaption=f'{hemisphereLong}-hemisphere ice flux dust',
                     galleryGroup='ice flux dust',
                     groupSubtitle=None,

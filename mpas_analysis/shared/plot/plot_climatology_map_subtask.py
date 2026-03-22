@@ -439,6 +439,34 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         else:
             remappedRefClimatology = None
 
+        # Optional scaling for unit conversion before plotting. This can be
+        # supplied either as a common fieldScaleFactor or separately for model
+        # and reference fields.
+        config = self.config
+        configSectionName = self.configSectionName
+        modelScaleFactor = 1.0
+        refScaleFactor = 1.0
+        if config.has_option(configSectionName, 'fieldScaleFactor'):
+            commonScaleFactor = config.getfloat(configSectionName,
+                                                'fieldScaleFactor')
+            modelScaleFactor = commonScaleFactor
+            refScaleFactor = commonScaleFactor
+        if config.has_option(configSectionName, 'mpasFieldScaleFactor'):
+            modelScaleFactor = config.getfloat(configSectionName,
+                                               'mpasFieldScaleFactor')
+        if config.has_option(configSectionName, 'refFieldScaleFactor'):
+            refScaleFactor = config.getfloat(configSectionName,
+                                             'refFieldScaleFactor')
+
+        if modelScaleFactor != 1.0:
+            remappedModelClimatology[self.mpasFieldName] = (
+                modelScaleFactor * remappedModelClimatology[self.mpasFieldName])
+
+        if remappedRefClimatology is not None and self.refFieldName is not None \
+                and refScaleFactor != 1.0:
+            remappedRefClimatology[self.refFieldName] = (
+                refScaleFactor * remappedRefClimatology[self.refFieldName])
+
         if remappedRefClimatology is not None and depth is not None:
             depthIndex = -1
             for index, depthSlice in enumerate(

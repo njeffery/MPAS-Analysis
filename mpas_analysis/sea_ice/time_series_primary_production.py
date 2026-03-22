@@ -193,7 +193,7 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
         startYear = config.getint('timeSeries', 'startYear')
         endYear = config.getint('timeSeries', 'endYear')
 
-        groupLink = 'timeseries'
+        groupLink = 'bgc_timeseries'
 
         for hemisphere in ['NH', 'SH']:
 
@@ -204,7 +204,8 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
 
             title = '{} {}-Hemisphere'.format(plotTitle, hemisphere)
             
-            galleryGroup = '{} Sea-ice Primary Production'.format(hemisphere)
+            galleryGroup = 'BGC Timeseries'
+            galleryName = '{} Sea-ice Primary Production'.format(hemisphere)
 
             figureNameStd = '{}/{}.png'.format(self.plotsDirectory,
                                               filePrefix)
@@ -287,6 +288,7 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
                 imageCaption=caption,
                 galleryGroup=galleryGroup,
                 groupLink=groupLink,
+                gallery=galleryName,
                 downloadFileName='primaryProduction.nc')
 
     def _compute_primary_production(self):
