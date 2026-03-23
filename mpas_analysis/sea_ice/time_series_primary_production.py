@@ -202,7 +202,7 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
 
             dsRegional = dsTimeSeries[hemisphere]
 
-            title = '{} {}-Hemisphere'.format(plotTitle, hemisphere)
+            title = 'Total {} Sea-Ice Primary Production'.format(hemisphere)
             
             galleryGroup = 'BGC Timeseries'
             galleryName = '{} Sea-ice Primary Production'.format(hemisphere)
@@ -284,11 +284,11 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
                 config, filePrefix, componentName='Sea Ice',
                 componentSubdirectory='sea_ice',
                 tagDict=None,
+                thumbnailDescription=galleryName,
                 imageDescription=caption,
                 imageCaption=caption,
                 galleryGroup=galleryGroup,
                 groupLink=groupLink,
-                gallery=galleryName,
                 downloadFileName='primaryProduction.nc')
 
     def _compute_primary_production(self):
