@@ -411,6 +411,9 @@ class AnalysisTask(Process):
             if prefix == 'only':
                 if suffix not in allSuffixes:
                     generate = False
+            elif element in allSuffixes:
+                # Support bare tag names in output.generate (without all_).
+                generate = True
             elif element == self.taskName:
                 generate = True
 

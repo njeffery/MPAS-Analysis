@@ -76,7 +76,8 @@ class TimeSeriesSeaIcePrimaryProduction(AnalysisTask):
             config=config,
             taskName='timeSeriesSeaIcePrimaryProduction',
             componentName='seaIce',
-            tags=['timeSeries', 'publicObs', 'arctic', 'antarctic', 'BGC'])
+            tags=['timeSeries', 'publicObs', 'arctic', 'antarctic', 'BGC',
+                  'seaIceBGC', 'seaiceBGC'])
 
         self.mpasTimeSeriesTask = mpasTimeSeriesTask
         self.controlConfig = controlConfig

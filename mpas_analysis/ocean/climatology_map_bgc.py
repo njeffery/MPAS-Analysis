@@ -59,7 +59,8 @@ class ClimatologyMapBGC(AnalysisTask):
         super(ClimatologyMapBGC, self).__init__(
             config=config, taskName='climatologyMapBGC',
             componentName='ocean',
-            tags=['climatology', 'horizontalMap', 'BGC'] + bgcVars)
+            tags=['climatology', 'horizontalMap', 'BGC', 'oceanBGC',
+                  'publicObs'] + bgcVars)
 
         sectionName = 'climatologyMapBGC'
 
@@ -88,7 +89,8 @@ class ClimatologyMapBGC(AnalysisTask):
             'NO3': 'NO3_1.0x1.0degree_20180628.nc',
             'pCO2surface': 'pCO2surface_1.0x1.0degree_20180629.nc',
             'O2': 'O2_1.0x1.0degree_20180628.nc',
-            'pH_3D': 'pH_3D_1.0x1.0degree_20180629.nc'}
+            'pH_3D': 'pH_3D_1.0x1.0degree_20180629.nc',
+            'Fe': 'Fe_CMIP6_1.0x1.0degree_monthly_20260511.nc'}
 
         # If user wants to compare to preindustrial data, make sure
         # that we load in the right DIC field.
@@ -125,9 +127,6 @@ class ClimatologyMapBGC(AnalysisTask):
                 variableList = [prefix + 'spChl', prefix + 'diatChl',
                                 prefix + 'diazChl']
                 plotField = 'Chl'
-            elif fieldName == 'Fe':
-                variableList = ['timeMonthly_avg_ecosysTracers_Fe']
-                plotField = 'timeMonthly_avg_ecosysTracers_Fe'
             else:
                 variableList = [mpasFieldName]
                 plotField = mpasFieldName
@@ -140,25 +139,35 @@ class ClimatologyMapBGC(AnalysisTask):
                 comparisonGridNames=comparisonGridNames,
                 seasons=seasons,
                 iselValues=iselValues,
+                ignoreIfMissingVariables=fieldName in [
+                    'dust_FLUX_DRY', 'dust_FLUX_WET', 'dust_FLUX_IN'],
                 subtaskName='remapMpasClimatology_{}'.format(fieldName))
 
             obsSubdirectoryOption = '{}Subdirectory'.format(fieldName)
+            hasObservationFileName = config.has_option(fieldSectionName,
+                                                       'observationsFileName')
             hasObservations = (
                 controlConfig is None and
                 observationsLabel != 'None' and
-                fieldName in obsFileDict and
+                (fieldName in obsFileDict or hasObservationFileName) and
                 config.has_option('oceanObservations', obsSubdirectoryOption))
 
             if hasObservations:
-                refTitleLabel = 'Observations'
+                refTitleLabel = observationsLabel
                 if preindustrial and 'DIC' in fieldName:
                     refTitleLabel += ' (Preindustrial)'
 
                 observationsDirectory = build_obs_path(
                     config, 'ocean', obsSubdirectoryOption)
 
+                if hasObservationFileName:
+                    obsFileBaseName = config.get(fieldSectionName,
+                                                 'observationsFileName')
+                else:
+                    obsFileBaseName = obsFileDict[fieldName]
+
                 obsFileName = "{}/{}".format(observationsDirectory,
-                                             obsFileDict[fieldName])
+                                             obsFileBaseName)
 
                 # For fields like Chl, allow model-only mode when
                 # observational files are unavailable on a given system.
@@ -188,7 +197,7 @@ class ClimatologyMapBGC(AnalysisTask):
                         subtaskName='remapObservations_{}'.format(fieldName))
                     self.add_subtask(remapObservationsSubtask)
 
-                    diffTitleLabel = 'Model - Observations'
+                    diffTitleLabel = f'Model - {observationsLabel}'
 
                     # Certain BGC observations are only available at annual
                     # resolution. Need to ensure that the user is aware that

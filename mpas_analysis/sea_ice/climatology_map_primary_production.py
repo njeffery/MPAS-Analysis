@@ -46,7 +46,9 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
 
         fieldName = 'seaIcePrimaryProduction'
 
-        tags = ['climatology', 'horizontalMap', fieldName, 'BGC']
+        tags = ['climatology', 'horizontalMap', fieldName, 'BGC',
+            'seaIceBGC', 'seaiceBGC', 'publicObs',
+            'climatologyMapSeaIceBGC', 'climatologyMapSeaiceBGC']
         if hemisphere == 'NH':
             tags = tags + ['arctic']
         else:
@@ -68,19 +70,35 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
         else:
             hemisphereLong = 'Southern'
 
+        parentSection = 'climatologyMapSeaIceBGC'
+
         # read in what seasons we want to plot
-        seasons = config.getexpression(sectionName, 'seasons')
+        if config.has_option(parentSection, 'seasons'):
+            seasons = config.getexpression(parentSection, 'seasons')
+        else:
+            seasons = config.getexpression(sectionName, 'seasons')
 
         if len(seasons) == 0:
             raise ValueError('config section {} does not contain valid list '
                              'of seasons'.format(sectionName))
 
-        comparisonGridNames = config.getexpression(sectionName,
-                                                   'comparisonGrids')
+        if config.has_option(parentSection, 'comparisonGrids'):
+            comparisonGridNames = config.getexpression(parentSection,
+                                                       'comparisonGrids')
+        else:
+            comparisonGridNames = config.getexpression(sectionName,
+                                                       'comparisonGrids')
 
         if len(comparisonGridNames) == 0:
             raise ValueError('config section {} does not contain valid list '
                              'of comparison grids'.format(sectionName))
+
+        gridKeyword = 'arctic' if hemisphere == 'NH' else 'antarctic'
+        comparisonGridNames = [gridName for gridName in comparisonGridNames
+                       if gridName.lower().startswith(gridKeyword)]
+        if len(comparisonGridNames) == 0:
+            raise ValueError('No valid {} comparison grids found in section '
+                             '{}'.format(gridKeyword, sectionName))
 
         # the variable self.mpasFieldName will be added to mpasClimatologyTask
         # along with the seasons.
@@ -171,10 +189,10 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
                     diffTitleLabel=diff_title_label,
                     unitsLabel=r'mg m$^{-2}$ d$^{-1}$',
                     imageCaption=imageCaption,
-                    galleryGroup='BGC - {}-Hemisphere Sea-Ice Primary Production'.format(
+                    galleryGroup='BGC - {}-Hemisphere'.format(
                         hemisphereLong),
                     groupSubtitle=None,
-                    groupLink='{}_primaryprod'.format(hemisphere.lower()),
+                    groupLink='{}_bgc'.format(hemisphere.lower()),
                     galleryName='Sea ice primary production',
                     extend='both',
                     prependComparisonGrid=False)

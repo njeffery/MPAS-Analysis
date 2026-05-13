@@ -44,7 +44,9 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
 
         task_name = f'climatologyMapSeaIceTotalChlorophyll{hemisphere}'
 
-        tags = ['climatology', 'horizontalMap', 'BGC', 'seaiceChlorophyll']
+        tags = ['climatology', 'horizontalMap', 'BGC', 'seaiceChlorophyll',
+            'seaIceBGC', 'seaiceBGC', 'publicObs',
+            'climatologyMapSeaIceBGC', 'climatologyMapSeaiceBGC']
         if hemisphere == 'NH':
             tags.append('arctic')
         else:
@@ -55,17 +57,33 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
 
         section_name = self.taskName
         hemisphere_long = 'Northern' if hemisphere == 'NH' else 'Southern'
+        parent_section = 'climatologyMapSeaIceBGC'
 
-        seasons = config.getexpression(section_name, 'seasons')
+        if config.has_option(parent_section, 'seasons'):
+            seasons = config.getexpression(parent_section, 'seasons')
+        else:
+            seasons = config.getexpression(section_name, 'seasons')
         if len(seasons) == 0:
             raise ValueError(f'config section {section_name} does not contain '
                              'valid list of seasons')
 
-        comparison_grid_names = config.getexpression(section_name,
-                                                     'comparisonGrids')
+        if config.has_option(parent_section, 'comparisonGrids'):
+            comparison_grid_names = config.getexpression(
+                parent_section, 'comparisonGrids')
+        else:
+            comparison_grid_names = config.getexpression(
+                section_name, 'comparisonGrids')
         if len(comparison_grid_names) == 0:
             raise ValueError(f'config section {section_name} does not contain '
                              'valid list of comparison grids')
+
+        grid_keyword = 'arctic' if hemisphere == 'NH' else 'antarctic'
+        comparison_grid_names = [grid_name for grid_name in
+                                 comparison_grid_names
+                                 if grid_name.lower().startswith(grid_keyword)]
+        if len(comparison_grid_names) == 0:
+            raise ValueError(f'No valid {grid_keyword} comparison grids '
+                             f'found in section {section_name}')
 
         field_name = 'totalChlorophyll'
         mpas_field_name = f'timeMonthly_avg_{field_name}'
@@ -148,11 +166,10 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
                     diffTitleLabel=diff_title_label,
                     unitsLabel=r'mg Chla m$^{-2}$',
                     imageCaption=image_caption,
-                    galleryGroup=f'BGC - {hemisphere_long}-Hemisphere '
-                                 'Sea-Ice Total Chlorophyll',
+                    galleryGroup=f'BGC - {hemisphere_long}-Hemisphere',
                     groupSubtitle=None,
-                    groupLink=f'{hemisphere.lower()}_total_chlorophyll',
-                    galleryName='Total chlorophyll',
+                    groupLink=f'{hemisphere.lower()}_bgc',
+                    galleryName='Total sea ice chlorophyll',
                     configSectionName='seaIceTotalChlorophyll',
                     prependComparisonGrid=False)
 

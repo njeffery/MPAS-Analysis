@@ -1349,6 +1349,56 @@
 
   <observation>
     <name>
+      CMIP6 Dissolved Iron
+    </name>
+    <component>
+      ocean
+    </component>
+    <description>
+      Dissolved iron monthly climatology from CMIP6 model ensemble in nM
+    </description>
+    <source>
+      [CMIP6 preindustrial climatology of dissolved iron]
+      (https://zenodo.org/records/14217784)
+    </source>
+    <releasePolicy>
+      Please cite the source publication when using this dataset.
+    </releasePolicy>
+    <references>
+      - [Gnanadesikan et al. (2025)](https://doi.org/10.1029/2025GB008761)
+    </references>
+    <bibtex>
+      @article{https://doi.org/10.1029/2025GB008761,
+      author = {Gnanadesikan, Anand and Liu, Jingwen and Dutta, Sandupal and Feole, Brandon and McCarthy, Faith and Qian, John},
+      title = {Machine Learning Methods Suggest That Large Regional Changes in Phytoplankton Biomass Produced by Earth System Models Do Not Reflect Realistic Responses to Changing Climate},
+      journal = {Global Biogeochemical Cycles},
+      volume = {39},
+      number = {10},
+      pages = {e2025GB008761},
+      doi = {https://doi.org/10.1029/2025GB008761},
+      url = {https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2025GB008761},
+      eprint = {https://agupubs.onlinelibrary.wiley.com/doi/pdf/10.1029/2025GB008761},
+      year = {2025}
+      }
+    </bibtex>
+    <dataUrls>
+      - https://zenodo.org/records/14217784
+    </dataUrls>
+    <preprocessing>
+    </preprocessing>
+    <tasks>
+      - climatologyMapBGC
+    </tasks>
+    <subdirectory>
+      Ocean/BGC/Fe
+    </subdirectory>
+    <nameInDocs>
+      CMIP6-ensemble-dissolved-iron
+    </nameInDocs>
+  </observation>
+
+  <observation>
+    <name>
       GLODAPv2
     </name>
     <component>

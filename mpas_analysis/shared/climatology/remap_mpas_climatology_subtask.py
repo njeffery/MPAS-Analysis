@@ -86,7 +86,8 @@ class RemapMpasClimatologySubtask(AnalysisTask):
     def __init__(self, mpasClimatologyTask, parentTask, climatologyName,
                  variableList, seasons, comparisonGridNames=None,
                  iselValues=None, subtaskName='remapMpasClimatology',
-                 useNcremap=None, vertices=False):
+                 useNcremap=None, vertices=False,
+                 ignoreIfMissingVariables=False):
 
         """
         Construct the analysis task and adds it as a subtask of the
@@ -138,6 +139,10 @@ class RemapMpasClimatologySubtask(AnalysisTask):
 
         vertices : bool, optional
             Whether to remap from vertices, rather than cells
+
+        ignoreIfMissingVariables : bool, optional
+            Whether to skip this subtask (instead of raising) if one or more
+            requested variables are not available in the stream.
         """
         # Authors
         # -------
@@ -184,6 +189,8 @@ class RemapMpasClimatologySubtask(AnalysisTask):
 
         self.vertices = vertices
         self.meshFilename = None
+        self.ignoreIfMissingVariables = ignoreIfMissingVariables
+        self.wasSkipped = False
 
     def setup_and_check(self):
         """
@@ -215,7 +222,17 @@ class RemapMpasClimatologySubtask(AnalysisTask):
 
         # don't add the variables and seasons to mpasClimatologyTask until
         # we're sure this subtask is supposed to run
-        self.mpasClimatologyTask.add_variables(self.variableList, self.seasons)
+        try:
+            self.mpasClimatologyTask.add_variables(self.variableList,
+                                                   self.seasons)
+        except ValueError as exception:
+            if self.ignoreIfMissingVariables:
+                self.wasSkipped = True
+                print('Warning: skipping climatology {} because one or more '
+                      'variables are unavailable: {}'.format(
+                          self.climatologyName, exception))
+                return
+            raise
 
         # make the mapping directory, because doing so within each process
         # seems to be giving ESMF_RegridWeightGen some trouble
@@ -230,6 +247,12 @@ class RemapMpasClimatologySubtask(AnalysisTask):
         # Authors
         # -------
         # Xylar Asay-Davis
+
+        if self.wasSkipped:
+            self.logger.info('\nSkipping climatology {} because required '
+                             'variables were missing from history output.'.
+                             format(self.climatologyName))
+            return
 
         self.logger.info('\nRemapping climatology {}'.format(
             self.climatologyName))

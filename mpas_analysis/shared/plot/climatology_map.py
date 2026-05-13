@@ -164,7 +164,8 @@ def plot_polar_comparison(
         ax.set_extent(extent, crs=data_crs)
 
         title = limit_title(title, maxTitleLength)
-        ax.set_title(title, y=1.06, **plottitle_font)
+        title_lines = title.split('\n', 1)
+        ax.set_title(title_lines[0], y=1.06, **plottitle_font)
 
         gl = ax.gridlines(crs=data_crs, color='k', linestyle=':', zorder=5,
                           draw_labels=True)
@@ -220,6 +221,10 @@ def plot_polar_comparison(
         dpi = config.getint('plot', 'dpi')
 
     dictModelRef = setup_colormap(config, colorMapSectionName, suffix='Result')
+    dictReference = setup_colormap(config, colorMapSectionName, suffix='Reference')
+    if (dictReference['colormap'] is None and dictReference['norm'] is None
+            and dictReference['levels'] is None):
+        dictReference = dictModelRef
     dictDiff = setup_colormap(config, colorMapSectionName, suffix='Difference')
 
     if refArray is None:
@@ -380,7 +385,17 @@ def plot_global_comparison(
         ax.set_extent(extent, crs=projection)
 
         title = limit_title(title, maxTitleLength)
-        ax.set_title(title, y=1.02, **plottitle_font)
+        title_lines = title.split('\n', 1)
+        ax.set_title(title_lines[0], y=1.02, **plottitle_font)
+        if len(title_lines) > 1:
+            ax.set_title(title_lines[0], y=1.06, **plottitle_font)
+            try:
+                base_size = float(plottitle_font['size'])
+            except (ValueError, TypeError):
+                base_size = 10.0
+            ax.text(0.5, 1.02, title_lines[1], transform=ax.transAxes,
+                    ha='center', va='bottom', fontsize=base_size * 0.7,
+                    color=config.get('plot', 'titleFontColor'))
 
         gl = ax.gridlines(crs=projection, color='k', linestyle=':', zorder=5,
                           draw_labels=True)
@@ -459,6 +474,10 @@ def plot_global_comparison(
     extent = [-180, 180, -85, 85]
 
     dictModelRef = setup_colormap(config, colorMapSectionName, suffix='Result')
+    dictReference = setup_colormap(config, colorMapSectionName, suffix='Reference')
+    if (dictReference['colormap'] is None and dictReference['norm'] is None
+            and dictReference['levels'] is None):
+        dictReference = dictModelRef
     dictDiff = setup_colormap(config, colorMapSectionName, suffix='Difference')
 
     axes = []
@@ -475,7 +494,8 @@ def plot_global_comparison(
         axes.append(ax)
 
         ax = fig.add_subplot(gs[2, 0], projection=projection)
-        _plot_panel(ax, refTitle, refArray, **dictModelRef)
+        _plot_panel(ax, refTitle, refArray,
+                    pointObservations=pointObservations, **dictReference)
         axes.append(ax)
 
         ax = fig.add_subplot(gs[4, 0], projection=projection)
@@ -489,7 +509,9 @@ def plot_global_comparison(
 
         if refArray is not None:
             ax = plt.subplot(subplots[1], projection=projection)
-            _plot_panel(ax, refTitle, refArray, **dictModelRef)
+            _plot_panel(ax, refTitle, refArray,
+                        pointObservations=pointObservations,
+                        **dictReference)
             axes.append(ax)
 
             ax = plt.subplot(subplots[2], projection=projection)
@@ -639,7 +661,17 @@ def plot_projection_comparison(
                     pointObservations=None):
 
         title = limit_title(title, maxTitleLength)
-        ax.set_title(title, **plottitle_font)
+        title_lines = title.split('\n', 1)
+        ax.set_title(title_lines[0], y=1.06, **plottitle_font)
+        if len(title_lines) > 1:
+            ax.set_title(title_lines[0], y=1.09, **plottitle_font)
+            try:
+                base_size = float(plottitle_font['size'])
+            except (ValueError, TypeError):
+                base_size = 14.0
+            ax.text(0.5, 1.06, title_lines[1], transform=ax.transAxes,
+                    ha='center', va='bottom', fontsize=base_size * 0.8,
+                    color=config.get('plot', 'titleFontColor'))
 
         ax.set_extent(extent, crs=projection)
 
@@ -743,6 +775,10 @@ def plot_projection_comparison(
     left_labels = projectionName not in ['arctic', 'antarctic']
 
     dictModelRef = setup_colormap(config, colorMapSectionName, suffix='Result')
+    dictReference = setup_colormap(config, colorMapSectionName, suffix='Reference')
+    if (dictReference['colormap'] is None and dictReference['norm'] is None
+            and dictReference['levels'] is None):
+        dictReference = dictModelRef
     dictDiff = setup_colormap(config, colorMapSectionName, suffix='Difference')
 
     fig = plt.figure(figsize=figsize, dpi=dpi)
@@ -774,7 +810,8 @@ def plot_projection_comparison(
 
     if refArray is not None:
         ax = plt.subplot(subplots[1], projection=projection)
-        _plot_panel(ax, refTitle, refArray, **dictModelRef)
+        _plot_panel(ax, refTitle, refArray,
+                    pointObservations=pointObservations, **dictReference)
 
         ax = plt.subplot(subplots[2], projection=projection)
         _plot_panel(ax, diffTitle, diffArray, **dictDiff)

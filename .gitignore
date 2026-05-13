@@ -102,3 +102,25 @@ ENV/
 
 # vscode settings
 .vscode/
+
+# Generated analysis outputs and local scratch artifacts
+*_output/
+observations_tmp/
+diff_*
+
+# Local observation/map copies: ignore all by default
+# Keep only files under explicit public subdirectories commit-eligible.
+observations/**
+!observations/**/
+!observations/**/public/
+!observations/**/public/**
+
+mpas_analysis/maps/**
+!mpas_analysis/maps/**/
+!mpas_analysis/maps/**/public/
+!mpas_analysis/maps/**/public/**
+
+# Common editor/backup artifacts
+*~
+#*#
+~$*.docx

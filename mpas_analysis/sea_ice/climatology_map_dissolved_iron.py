@@ -44,7 +44,9 @@ class ClimatologyMapSeaIceDissolvedIron(AnalysisTask):
 
         task_name = f'climatologyMapSeaIceDissolvedIron{hemisphere}'
 
-        tags = ['climatology', 'horizontalMap', 'BGC', 'seaiceDissolvedIron']
+        tags = ['climatology', 'horizontalMap', 'BGC', 'seaiceDissolvedIron',
+            'seaIceBGC', 'seaiceBGC', 'publicObs',
+            'climatologyMapSeaIceBGC', 'climatologyMapSeaiceBGC']
         if hemisphere == 'NH':
             tags.append('arctic')
         else:
@@ -55,24 +57,40 @@ class ClimatologyMapSeaIceDissolvedIron(AnalysisTask):
 
         section_name = self.taskName
         hemisphere_long = 'Northern' if hemisphere == 'NH' else 'Southern'
+        parent_section = 'climatologyMapSeaIceBGC'
 
-        seasons = config.getexpression(section_name, 'seasons')
+        if config.has_option(parent_section, 'seasons'):
+            seasons = config.getexpression(parent_section, 'seasons')
+        else:
+            seasons = config.getexpression(section_name, 'seasons')
         if len(seasons) == 0:
             raise ValueError(f'config section {section_name} does not contain '
                              'valid list of seasons')
 
-        comparison_grid_names = config.getexpression(section_name,
-                                                     'comparisonGrids')
+        if config.has_option(parent_section, 'comparisonGrids'):
+            comparison_grid_names = config.getexpression(
+                parent_section, 'comparisonGrids')
+        else:
+            comparison_grid_names = config.getexpression(
+                section_name, 'comparisonGrids')
         if len(comparison_grid_names) == 0:
             raise ValueError(f'config section {section_name} does not contain '
                              'valid list of comparison grids')
 
+        grid_keyword = 'arctic' if hemisphere == 'NH' else 'antarctic'
+        comparison_grid_names = [grid_name for grid_name in
+                                 comparison_grid_names
+                                 if grid_name.lower().startswith(grid_keyword)]
+        if len(comparison_grid_names) == 0:
+            raise ValueError(f'No valid {grid_keyword} comparison grids '
+                             f'found in section {section_name}')
+
         variable_specs = [
             {'field': 'totalVerticalDissolvedIronSnow',
-               'title': 'Total vertical dissolved iron in snow',
+                    'title': 'Total dissolved iron in snow',
                'config_section': 'seaIceDissolvedIronSnow'},
             {'field': 'totalVerticalDissolvedIronIce',
-               'title': 'Total vertical dissolved iron in ice',
+                    'title': 'Total dissolved iron in ice',
                'config_section': 'seaIceDissolvedIron'}
         ]
 
@@ -119,13 +137,13 @@ class ClimatologyMapSeaIceDissolvedIron(AnalysisTask):
                     if (hemisphere == 'NH' and
                             field_name == 'totalVerticalDissolvedIronIce'):
                         field_name_in_title = (
-                            'Total vertical dissolved iron in ice\n'
+                            'Total dissolved iron in ice\n'
                             'Observed bounds: 0.1-16 nM '
                             '(Evans et al. 2018)')
                     elif (hemisphere == 'SH' and
                             field_name == 'totalVerticalDissolvedIronIce'):
                         field_name_in_title = (
-                            'Total vertical dissolved iron in ice\n'
+                            'Total dissolved iron in ice\n'
                             'Observed bounds: 0.7-37 nM '
                             '(Lannuzel et al. 2010)')
 
@@ -138,10 +156,9 @@ class ClimatologyMapSeaIceDissolvedIron(AnalysisTask):
                         diffTitleLabel=diff_title_label,
                         unitsLabel=r'$\mu$mol Iron m$^{-2}$',
                         imageCaption=image_caption,
-                        galleryGroup=f'BGC - {hemisphere_long}-Hemisphere '
-                                     'Sea-Ice Dissolved Iron',
+                        galleryGroup=f'BGC - {hemisphere_long}-Hemisphere',
                         groupSubtitle=None,
-                        groupLink=f'{hemisphere.lower()}_dissolved_iron',
+                        groupLink=f'{hemisphere.lower()}_bgc',
                         galleryName=spec['title'],
                         configSectionName=spec['config_section'],
                         prependComparisonGrid=False)

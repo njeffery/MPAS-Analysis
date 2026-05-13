@@ -267,6 +267,49 @@ def build_analysis_list(config, controlConfig):
                                               componentName='seaIce')
 
     analyses.append(seaIceClimatologyTask)
+
+    seaIceBGCVariableMap = {
+        'PrimaryProduction': lambda hemisphere: (
+            sea_ice.ClimatologyMapSeaIcePrimaryProduction(
+                config=config, mpasClimatologyTask=seaIceClimatologyTask,
+                hemisphere=hemisphere, controlConfig=controlConfig)),
+        'DissolvedIron': lambda hemisphere: (
+            sea_ice.ClimatologyMapSeaIceDissolvedIron(
+                config=config, mpas_climatology_task=seaIceClimatologyTask,
+                hemisphere=hemisphere, control_config=controlConfig)),
+        'TotalChlorophyll': lambda hemisphere: (
+            sea_ice.ClimatologyMapSeaIceTotalChlorophyll(
+                config=config, mpas_climatology_task=seaIceClimatologyTask,
+                hemisphere=hemisphere, control_config=controlConfig))
+    }
+
+    allowedSeaIceImpurityVariables = ['TotalSeaIceBCSnow',
+                                      'TotalSeaIceBCIce',
+                                      'TotalSeaIceDustSnow',
+                                      'TotalSeaIceDustIce']
+
+    seaIceBGCVariables = config.getexpression('climatologyMapSeaIceBGC',
+                                              'variables')
+    for variable in seaIceBGCVariables:
+        if variable not in seaIceBGCVariableMap:
+            raise ValueError(f'Unsupported sea-ice BGC variable: {variable}')
+
+    seaIceImpurityVariables = config.getexpression(
+        'climatologyMapSeaIceImpurities', 'variables')
+
+    for variable in seaIceImpurityVariables:
+        if variable not in allowedSeaIceImpurityVariables:
+            raise ValueError('Unsupported sea-ice impurity variable: '
+                             f'{variable}')
+
+    for hemisphere in ['NH', 'SH']:
+        for variable in seaIceBGCVariables:
+            analyses.append(seaIceBGCVariableMap[variable](hemisphere))
+        analyses.append(sea_ice.ClimatologyMapSeaIceAerosolImpurities(
+            config=config, mpas_climatology_task=seaIceClimatologyTask,
+            hemisphere=hemisphere, control_config=controlConfig,
+            impurity_variables=seaIceImpurityVariables))
+
     analyses.append(sea_ice.ClimatologyMapSeaIceConc(
         config=config, mpasClimatologyTask=seaIceClimatologyTask,
         hemisphere='NH', controlConfig=controlConfig))
@@ -300,9 +343,6 @@ def build_analysis_list(config, controlConfig):
     analyses.append(sea_ice.ClimatologyMapSeaIceMelting(
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='NH', control_config=controlConfig))
-    analyses.append(sea_ice.ClimatologyMapSeaIcePrimaryProduction(
-        config=config, mpasClimatologyTask=seaIceClimatologyTask,
-        hemisphere='NH', controlConfig=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIceAreaTendencyThermo(
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='NH', control_config=controlConfig))
@@ -315,15 +355,6 @@ def build_analysis_list(config, controlConfig):
     analyses.append(sea_ice.ClimatologyMapSeaIceVolumeTendencyTransp(
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='NH', control_config=controlConfig))
-    analyses.append(sea_ice.ClimatologyMapSeaIceTotalChlorophyll(
-        config=config, mpas_climatology_task=seaIceClimatologyTask,
-        hemisphere='NH', control_config=controlConfig))
-    analyses.append(sea_ice.ClimatologyMapSeaIceDissolvedIron(
-        config=config, mpas_climatology_task=seaIceClimatologyTask,
-        hemisphere='NH', control_config=controlConfig))
-    analyses.append(sea_ice.ClimatologyMapSeaIceAerosolImpurities(
-        config=config, mpas_climatology_task=seaIceClimatologyTask,
-        hemisphere='NH', control_config=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIceConc(
         config=config, mpasClimatologyTask=seaIceClimatologyTask,
         hemisphere='SH', controlConfig=controlConfig))
@@ -355,18 +386,6 @@ def build_analysis_list(config, controlConfig):
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='SH', control_config=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIceMelting(
-        config=config, mpas_climatology_task=seaIceClimatologyTask,
-        hemisphere='SH', control_config=controlConfig))
-    analyses.append(sea_ice.ClimatologyMapSeaIcePrimaryProduction(
-        config=config, mpasClimatologyTask=seaIceClimatologyTask,
-        hemisphere='SH', controlConfig=controlConfig))
-    analyses.append(sea_ice.ClimatologyMapSeaIceTotalChlorophyll(
-        config=config, mpas_climatology_task=seaIceClimatologyTask,
-        hemisphere='SH', control_config=controlConfig))
-    analyses.append(sea_ice.ClimatologyMapSeaIceDissolvedIron(
-        config=config, mpas_climatology_task=seaIceClimatologyTask,
-        hemisphere='SH', control_config=controlConfig))
-    analyses.append(sea_ice.ClimatologyMapSeaIceAerosolImpurities(
         config=config, mpas_climatology_task=seaIceClimatologyTask,
         hemisphere='SH', control_config=controlConfig))
     analyses.append(sea_ice.ClimatologyMapSeaIceAreaTendencyThermo(

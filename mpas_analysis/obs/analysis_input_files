@@ -90,6 +90,7 @@ observations/Ocean/SOSE/SOSE_JFM_T_S_z_vol_SouthernOcean_0.167x0.167degree_20200
 observations/Ocean/BGC/obs.bib
 observations/Ocean/BGC/Chl/Chl_SeaWIFS_20180702.nc
 observations/Ocean/BGC/Fe/tagliabue_fe_database_jun2015_public_point_data.nc
+observations/Ocean/BGC/Fe/Fe_CMIP6_1.0x1.0degree_monthly_20260511.nc
 observations/Ocean/BGC/CO2_gas_flux/CO2_gas_flux_1.0x1.0degree_20180628.nc
 observations/Ocean/BGC/SiO3/SiO3_1.0x1.0degree_20180628.nc
 observations/Ocean/BGC/PO4/PO4_1.0x1.0degree_20180628.nc

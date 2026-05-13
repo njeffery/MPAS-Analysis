@@ -380,6 +380,13 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         observations or a control run
         """
 
+        if getattr(self.remapMpasClimatologySubtask, 'wasSkipped', False):
+            self.logger.info(
+                '\nSkipping plot for {} because remapped model climatology '
+                'was intentionally skipped due to missing input variables.'.
+                format(self.fieldNameInTitle))
+            return
+
         season = self.season
         depth = self.depth
         comparisonGridName = self.comparisonGridName
@@ -535,6 +542,14 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         configSectionName = self.configSectionName
 
         mainRunName = config.get('runs', 'mainRunName')
+        modelTitle = mainRunName
+        if (configSectionName is not None and
+                                config.has_option(configSectionName,
+                                                                    'modelTitleSecondLine')):
+            secondLine = config.get(configSectionName,
+                                                                        'modelTitleSecondLine').strip()
+            if secondLine:
+                                modelTitle = f'{mainRunName}\n{secondLine}'
 
         modelOutput = _nans_to_numpy_mask(
             remappedModelClimatology[self.mpasFieldName].values)
@@ -581,7 +596,7 @@ class PlotClimatologyMapSubtask(AnalysisTask):
                                configSectionName,
                                fileout=outFileName,
                                title=title,
-                               modelTitle=mainRunName,
+                               modelTitle=modelTitle,
                                refTitle=self.refTitleLabel,
                                diffTitle=self.diffTitleLabel,
                                cbarlabel=self.unitsLabel,
@@ -616,6 +631,14 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         configSectionName = self.configSectionName
 
         mainRunName = config.get('runs', 'mainRunName')
+        modelTitle = mainRunName
+        if (configSectionName is not None and
+                                config.has_option(configSectionName,
+                                                                    'modelTitleSecondLine')):
+            secondLine = config.get(configSectionName,
+                                                                        'modelTitleSecondLine').strip()
+            if secondLine:
+                                modelTitle = f'{mainRunName}\n{secondLine}'
 
         validMask = remappedModelClimatology['validMask'].values
         landMask = np.ma.masked_array(
@@ -683,7 +706,7 @@ class PlotClimatologyMapSubtask(AnalysisTask):
             colorMapSectionName=configSectionName,
             projectionName=comparisonGridName,
             title=title,
-            modelTitle=mainRunName,
+            modelTitle=modelTitle,
             refTitle=self.refTitleLabel,
             diffTitle=self.diffTitleLabel,
             cbarlabel=self.unitsLabel,
