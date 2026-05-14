@@ -19,10 +19,20 @@ import pytest
 from tranche import Tranche
 
 from mpas_analysis.test import TestCase
-from mpas_analysis.shared.analysis_task import AnalysisTask
+from mpas_analysis.shared.analysis_task import AnalysisTask, is_snapshot_mode
 
 
 class TestAnalysisTask(TestCase):
+
+    def test_snapshot_default_off(self):
+        config = Tranche()
+        config.set('snapshot', 'date', '0160-04-15')
+        config.set('output', 'generate', "['all']")
+
+        self.assertFalse(is_snapshot_mode(config))
+
+        config.set('output', 'generate', "['all', 'snapshot']")
+        self.assertTrue(is_snapshot_mode(config))
 
     def test_checkGenerate(self):
 
@@ -125,6 +135,12 @@ class TestAnalysisTask(TestCase):
         for taskName in cores:
             expectedResults[taskName] = True
         doTest("['all']", expectedResults)
+
+        expectedResults = {}
+        for taskName in cores:
+            expectedResults[taskName] = 'timeSeries' not in tags[taskName] and \
+                'index' not in tags[taskName]
+        doTest("['all', 'snapshot']", expectedResults)
 
         # test 'all_<category>' and ['all', 'no_<category>']
         allTags = []

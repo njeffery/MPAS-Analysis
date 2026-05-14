@@ -22,16 +22,20 @@ import mpas_analysis
 import mpas_analysis.version
 
 import argparse
+import configparser
 import traceback
 import sys
 import shutil
 import os
+import calendar
+import tempfile
 from collections import OrderedDict
 import progressbar
 import logging
 import xarray
 import time
 import json
+from datetime import datetime
 from importlib.metadata import Distribution
 from importlib.resources import files
 
@@ -48,7 +52,8 @@ from mpas_analysis.shared.html import generate_html
 
 from mpas_analysis.shared import AnalysisTask
 from mpas_analysis.shared.analysis_task import \
-    update_time_bounds_from_file_names
+    update_time_bounds_from_file_names, is_snapshot_mode
+from mpas_analysis.shared.constants import constants
 
 from mpas_analysis.shared.plot.colormap import register_custom_colormaps, \
     _plot_color_gradients
@@ -74,11 +79,101 @@ def update_time_bounds_in_config(config):
         contains config options
 
     """
+    if is_snapshot_mode(config):
+        update_time_bounds_in_config_for_snapshot(config)
+        return
+
     # By updating the bounds for each component, we should end up with the
     # more constrained time bounds if any component has less output than others
     for componentName in ['ocean', 'seaIce']:
         for section in ['climatology', 'timeSeries', 'index']:
             update_time_bounds_from_file_names(config, section, componentName)
+
+
+def update_time_bounds_in_config_for_snapshot(config):
+    """Pin climatology analyses to the month containing snapshot.date."""
+
+    if not config.has_option('snapshot', 'date'):
+        raise ValueError('Snapshot mode requires [snapshot] date = YYYY-MM-DD')
+
+    snapshotDate = config.get('snapshot', 'date')
+    try:
+        date = datetime.strptime(snapshotDate, '%Y-%m-%d')
+    except ValueError as exception:
+        raise ValueError('Snapshot date must have format YYYY-MM-DD') from exception
+
+    month = date.month
+    year = date.year
+    lastDay = calendar.monthrange(year, month)[1]
+    monthName = constants.abrevMonthNames[month - 1]
+
+    startDate = f'{year:04d}-{month:02d}-01_00:00:00'
+    endDate = f'{year:04d}-{month:02d}-{lastDay:02d}_23:59:59'
+
+    overrides = [
+        '[snapshot]',
+        f'month = {monthName}',
+        '',
+        '[climatology]',
+        f'startYear = {year}',
+        f'endYear = {year}',
+        f'startDate = {startDate}',
+        f'endDate = {endDate}',
+        '',
+        '[timeSeries]',
+        f'startYear = {year}',
+        f'endYear = {year}',
+        '',
+        '[index]',
+        f'startYear = {year}',
+        f'endYear = {year}',
+        ''
+    ]
+
+    for section in _get_snapshot_sections(config):
+        if config.has_option(section, 'seasons'):
+            overrides.extend([
+                f'[{section}]',
+                f"seasons = ['{monthName}']",
+                ''
+            ])
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.cfg',
+                                     delete=False) as tempFile:
+        tempFile.write('\n'.join(overrides))
+        overridePath = tempFile.name
+
+    config.add_user_config(overridePath)
+    os.remove(overridePath)
+
+
+def _get_config_sections(config):
+    """Collect section names from the config files loaded into Tranche."""
+
+    sections = set()
+    for configFile in config.list_files():
+        if not configFile.endswith('.cfg'):
+            continue
+        parser = configparser.ConfigParser()
+        parser.read(configFile)
+        sections.update(parser.sections())
+
+    return sorted(sections)
+
+
+def _get_snapshot_sections(config):
+    """Get explicitly requested task sections for snapshot season updates."""
+
+    generate = config.getexpression('output', 'generate')
+    sections = []
+    for item in generate:
+        if item == 'snapshot' or item.startswith('all') or \
+                item.startswith('no_'):
+            continue
+        if item in _get_config_sections(config):
+            sections.append(item)
+
+    return sections
 
 
 def build_analysis_list(config, controlConfig):

@@ -13,6 +13,8 @@ import xarray as xr
 from pyremap import LatLonGridDescriptor
 
 from mpas_analysis.shared import AnalysisTask
+from mpas_analysis.shared.analysis_task import is_snapshot_mode
+from mpas_analysis.shared.constants import constants
 
 from mpas_analysis.shared.climatology import RemapMpasClimatologySubtask, \
     RemapObservedClimatologySubtask
@@ -127,35 +129,50 @@ class ClimatologyMapSeaIceConc(AnalysisTask):
                                                    'observationPrefixes')
         for prefix in observationPrefixes:
             for season in seasons:
-                observationTitleLabel = \
-                    'Observations (SSM/I {})'.format(prefix)
+                obsSeason, obsFileName = self._get_observation_file(
+                    prefix, hemisphere, season)
 
-                obsFileName = build_obs_path(
-                    config, 'seaIce',
-                    relativePathOption='concentration{}{}_{}'.format(
-                        prefix, hemisphere, season),
-                    relativePathSection=sectionName)
+                remapObservationsSubtask = None
+                observationTitleLabel = None
+                if obsFileName is not None:
+                    observationTitleLabel = \
+                        'Observations (SSM/I {}, {})'.format(prefix,
+                                                             obsSeason)
 
-                remapObservationsSubtask = RemapObservedConcClimatology(
-                    parentTask=self, seasons=[season],
-                    fileName=obsFileName,
-                    outFilePrefix='{}{}{}_{}'.format(
-                        obsFieldName, prefix, hemisphere, season),
-                    comparisonGridNames=comparisonGridNames,
-                    subtaskName='remapObservations_{}{}'.format(
-                        prefix, season))
-                self.add_subtask(remapObservationsSubtask)
+                    remapObservationsSubtask = RemapObservedConcClimatology(
+                        parentTask=self, seasons=[season],
+                        fileName=obsFileName,
+                        outFilePrefix='{}{}{}_{}'.format(
+                            obsFieldName, prefix, hemisphere, season),
+                        comparisonGridNames=comparisonGridNames,
+                        subtaskName='remapObservations_{}{}'.format(
+                            prefix, season))
+                    self.add_subtask(remapObservationsSubtask)
+
                 for comparisonGridName in comparisonGridNames:
 
                     imageDescription = \
                         'Climatology Map of {}-Hemisphere Sea-Ice ' \
                         'Concentration'.format(hemisphereLong)
-                    imageCaption = \
-                        '{}. <br> Observations: SSM/I {}'.format(
-                            imageDescription, prefix)
                     galleryGroup = \
                         '{}-Hemisphere Sea-Ice Concentration'.format(
                             hemisphereLong)
+
+                    if remapObservationsSubtask is None:
+                        imageCaption = imageDescription
+                        galleryName = 'Model'
+                        refFieldName = None
+                        refTitleLabel = None
+                        diffTitleLabel = None
+                    else:
+                        imageCaption = \
+                            '{}. <br> Observations: SSM/I {} ({})'.format(
+                                imageDescription, prefix, obsSeason)
+                        galleryName = 'Observations: SSM/I {}'.format(prefix)
+                        refFieldName = obsFieldName
+                        refTitleLabel = observationTitleLabel
+                        diffTitleLabel = 'Model - Observations'
+
                     # make a new subtask for this season and comparison
                     # grid
 
@@ -173,21 +190,65 @@ class ClimatologyMapSeaIceConc(AnalysisTask):
                                                           hemisphere),
                         fieldNameInTitle='Sea ice concentration',
                         mpasFieldName=mpasFieldName,
-                        refFieldName=obsFieldName,
-                        refTitleLabel=observationTitleLabel,
-                        diffTitleLabel='Model - Observations',
+                        refFieldName=refFieldName,
+                        refTitleLabel=refTitleLabel,
+                        diffTitleLabel=diffTitleLabel,
                         unitsLabel=r'fraction',
                         imageCaption=imageCaption,
                         galleryGroup=galleryGroup,
                         groupSubtitle=None,
                         groupLink='{}_conc'.format(hemisphere.lower()),
-                        galleryName='Observations: SSM/I {}'.format(
-                            prefix),
+                        galleryName=galleryName,
                         maskMinThreshold=minConcentration,
                         extend='both',
                         prependComparisonGrid=False)
 
                     self.add_subtask(subtask)
+
+    def _get_observation_file(self, prefix, hemisphere, season):
+        config = self.config
+        sectionName = self.taskName
+
+        for obsSeason in self._get_observation_season_candidates(season):
+            option = 'concentration{}{}_{}'.format(prefix, hemisphere,
+                                                   obsSeason)
+            if not config.has_option(sectionName, option):
+                continue
+
+            obsFileName = build_obs_path(
+                config, 'seaIce', relativePathOption=option,
+                relativePathSection=sectionName)
+            return obsSeason, obsFileName
+
+        return None, None
+
+    @staticmethod
+    def _get_observation_season_candidates(season):
+        candidates = [season]
+
+        if season in constants.abrevMonthNames:
+            month = constants.abrevMonthNames.index(season) + 1
+            seasonalCandidates = []
+            for candidate, months in constants.monthDictionary.items():
+                if candidate in constants.abrevMonthNames or candidate == 'ANN':
+                    continue
+                if month not in months:
+                    continue
+
+                center = 0.5 * (len(months) - 1)
+                positions = [index for index, value in enumerate(months)
+                             if value == month]
+                distance = min(abs(position - center)
+                               for position in positions)
+                seasonalCandidates.append((len(months), distance, candidate))
+
+            seasonalCandidates.sort()
+            candidates.extend(candidate for _, _, candidate in seasonalCandidates)
+
+        if 'ANN' not in candidates:
+            candidates.append('ANN')
+
+        return candidates
 
     def _add_ref_tasks(self, seasons, comparisonGridNames, hemisphere,
                        hemisphereLong, remapClimatologySubtask,

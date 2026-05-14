@@ -27,6 +27,15 @@ from mpas_analysis.shared.io.utility import build_config_full_path, \
     make_directories, get_files_year_month
 
 
+def is_snapshot_mode(config):
+    """Whether snapshot mode was requested in output.generate."""
+
+    if not config.has_option('output', 'generate'):
+        return False
+
+    return 'snapshot' in config.getexpression('output', 'generate')
+
+
 class AnalysisTask(Process):
     """
     The base class for analysis tasks.
@@ -386,6 +395,10 @@ class AnalysisTask(Process):
 
         config = self.config
         generateList = config.getexpression('output', 'generate')
+        snapshotMode = 'snapshot' in generateList
+        if snapshotMode:
+            generateList = [element for element in generateList
+                            if element != 'snapshot']
         if len(generateList) > 0 and generateList[0][0:5] == 'only_':
             # add 'all' if the first item in the list has the 'only' prefix.
             # Otherwise, we would not run any tasks
@@ -416,6 +429,10 @@ class AnalysisTask(Process):
                 generate = True
             elif element == self.taskName:
                 generate = True
+
+            if snapshotMode and ('timeSeries' in allSuffixes or
+                         'index' in allSuffixes):
+                generate = False
 
         return generate
 

@@ -15,6 +15,7 @@ import xarray as xr
 import numpy as np
 
 from mpas_analysis.shared import AnalysisTask
+from mpas_analysis.shared.analysis_task import is_snapshot_mode
 
 from mpas_analysis.shared.plot import plot_global_comparison, \
     plot_projection_comparison
@@ -221,6 +222,7 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         self.startDate = None
         self.endDate = None
         self.filePrefix = None
+        self.snapshotDate = None
         self.maskMinThreshold = None
         self.maskMaxThreshold = None
         self.extend = 'both'
@@ -355,6 +357,8 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         self.endYear = config.getint('climatology', 'endYear')
         self.startDate = config.get('climatology', 'startDate')
         self.endDate = config.get('climatology', 'endDate')
+        if is_snapshot_mode(config):
+            self.snapshotDate = config.get('snapshot', 'date')
 
         mainRunName = config.get('runs', 'mainRunName')
 
@@ -366,8 +370,13 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         prefixPieces.append(mainRunName)
         if self.depth is not None:
             prefixPieces.append(self.depthSuffix)
-        years = f'years{self.startYear:04d}-{self.endYear:04d}'
-        prefixPieces.extend([self.season, years])
+        prefixPieces.append(self.season)
+        if self.snapshotDate is None:
+            years = f'years{self.startYear:04d}-{self.endYear:04d}'
+            prefixPieces.append(years)
+        else:
+            snapshotStamp = self.snapshotDate.replace('-', '')
+            prefixPieces.append(f'snapshot{snapshotStamp}')
 
         self.filePrefix = '_'.join(prefixPieces)
 
@@ -605,7 +614,10 @@ class PlotClimatologyMapSubtask(AnalysisTask):
                                pointObservations=pointObservations,
                                extend=self.extend)
 
-        caption = f'{season} {self.imageCaption}'
+        if self.snapshotDate is None:
+            caption = f'{season} {self.imageCaption}'
+        else:
+            caption = f'{season} snapshot {self.snapshotDate} {self.imageCaption}'
         write_image_xml(
             config,
             filePrefix,
@@ -739,7 +751,10 @@ class PlotClimatologyMapSubtask(AnalysisTask):
 
     def _build_plot_title(self, season):
         """Compose a title with season/years always on the first line."""
-        season_years = f'({season}, years {self.startYear:04d}-{self.endYear:04d})'
+        if self.snapshotDate is None:
+            season_years = f'({season}, years {self.startYear:04d}-{self.endYear:04d})'
+        else:
+            season_years = f'({season}, snapshot {self.snapshotDate})'
         if self.fieldNameInTitle is None:
             return season_years
 

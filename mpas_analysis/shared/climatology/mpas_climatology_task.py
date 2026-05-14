@@ -21,6 +21,7 @@ import glob
 from mpas_tools.io import write_netcdf
 
 from mpas_analysis.shared.analysis_task import AnalysisTask
+from mpas_analysis.shared.analysis_task import is_snapshot_mode
 
 from mpas_analysis.shared.climatology.climatology import \
     get_unmasked_mpas_climatology_directory, \
@@ -134,6 +135,8 @@ class MpasClimatologyTask(AnalysisTask):
 
         self.allVariables = None
         self.useNcclimo = config.getboolean('climatology', 'useNcclimo')
+        if is_snapshot_mode(config):
+            self.useNcclimo = False
 
         # call the constructor from the base class (AnalysisTask)
         super(MpasClimatologyTask, self).__init__(
@@ -271,8 +274,12 @@ class MpasClimatologyTask(AnalysisTask):
 
         self.startYear, self.endYear = self.get_start_and_end()
 
-        self.startDate = '{:04d}-01-01_00:00:00'.format(self.startYear)
-        self.endDate = '{:04d}-12-31_23:59:59'.format(self.endYear)
+        if is_snapshot_mode(self.config):
+            self.startDate = self.config.get('climatology', 'startDate')
+            self.endDate = self.config.get('climatology', 'endDate')
+        else:
+            self.startDate = '{:04d}-01-01_00:00:00'.format(self.startYear)
+            self.endDate = '{:04d}-12-31_23:59:59'.format(self.endYear)
 
         # get a list of timeSeriesSta output files from the streams file,
         # reading only those that are between the start and end dates
