@@ -769,6 +769,11 @@ def run_analysis(config, analyses):
     analyses : OrderedDict of ``AnalysisTask`` objects
         A dictionary of analysis tasks to run with (task, subtask) names as
         keys
+
+    Returns
+    -------
+    errorCount : int
+        The number of tasks that failed during execution
     """
     # Authors
     # -------
@@ -915,7 +920,13 @@ def run_analysis(config, analyses):
                 print(message)
         else:
             if analysisTask._runStatus.value == AnalysisTask.FAIL:
-                sys.exit(1)
+                taskTitle = analysisTask.printTaskName
+                message = "ERROR in task {}.  See log file {} for " \
+                          "details".format(taskTitle,
+                                           analysisTask._logFileName)
+                logger.error(message)
+                print(message)
+                tasksWithErrors.append(taskTitle)
 
     progress.finish()
 
@@ -925,11 +936,10 @@ def run_analysis(config, analyses):
     handler.close()
     logger.handlers = []
 
-    # raise the last exception so the process exits with an error
+    # report task failures; the caller can decide whether to exit non-zero
     errorCount = len(tasksWithErrors)
     if errorCount == 1:
         print("There were errors in task {}".format(tasksWithErrors[0]))
-        sys.exit(1)
     elif errorCount > 0:
         print("There were errors in {} tasks: {}".format(
             errorCount, ', '.join(tasksWithErrors)))
@@ -937,10 +947,11 @@ def run_analysis(config, analyses):
         print("The following commands may be helpful:")
         print("  cd {}".format(logsDirectory))
         print("  grep Error *.log")
-        sys.exit(1)
     else:
         print('Log files for executed tasks can be found in {}'.format(
             logsDirectory))
+
+    return errorCount
 
 
 def wait_for_task(runningTasks, timeout=0.1):
@@ -1354,8 +1365,9 @@ Please reinstall mpas_analysis in editable mode using:
 
     setup_duration = time.time() - start_time
 
+    run_error_count = 0
     if not args.setup_only and not args.html_only:
-        run_analysis(config, analyses)
+        run_error_count = run_analysis(config, analyses)
         run_duration = time.time() - start_time
         m, s = divmod(setup_duration, 60)
         h, m = divmod(int(m), 60)
@@ -1366,6 +1378,9 @@ Please reinstall mpas_analysis in editable mode using:
 
     if not args.setup_only:
         generate_html(config, analyses, control_config, custom_config_files)
+
+    if run_error_count > 0:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
