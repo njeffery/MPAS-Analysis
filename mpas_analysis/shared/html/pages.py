@@ -471,6 +471,8 @@ class ComponentPage(object):
         # -------
         # Xylar Asay-Davis
 
+        self._reorder_groups()
+
         runName = self.config.get('runs', 'mainRunName')
 
         if self.controlConfig is None:
@@ -504,6 +506,51 @@ class ComponentPage(object):
             componentFile.write(
                 pageText.encode('ascii',
                                 'xmlcharrefreplace').decode('ascii'))
+
+    def _reorder_groups(self):
+        """Reorder component gallery groups for clearer presentation."""
+
+        if self.name != 'Sea Ice':
+            return
+
+        target_group_names = [
+            'BGC - Northern-Hemisphere',
+            'BGC - Southern-Hemisphere',
+            'Aerosol Impurities - Northern-Hemisphere',
+            'Aerosol Impurities - Southern-Hemisphere'
+        ]
+
+        target_groups = OrderedDict()
+        for group_name in target_group_names:
+            if group_name in self.groups:
+                target_groups[group_name] = self.groups[group_name]
+
+        if len(target_groups) == 0:
+            return
+
+        reordered_groups = OrderedDict()
+        inserted_targets = False
+        for group_name, group_dict in self.groups.items():
+            if group_name in target_groups:
+                continue
+
+            if (not inserted_targets and
+                    self._is_time_series_group(group_name)):
+                reordered_groups.update(target_groups)
+                inserted_targets = True
+
+            reordered_groups[group_name] = group_dict
+
+        if not inserted_targets:
+            reordered_groups.update(target_groups)
+
+        self.groups = reordered_groups
+
+    @staticmethod
+    def _is_time_series_group(group_name):
+        """Determine whether a gallery group belongs in the time-series area."""
+
+        return ('Timeseries' in group_name or 'Time Series' in group_name)
 
     def get_first_image(self):
         """

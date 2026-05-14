@@ -80,8 +80,7 @@ class TestAnalysisTask(TestCase):
                  'climatologyMapSeaIceTotalChlorophyllSH': 'seaIce',
                  'climatologyMapSeaIceDissolvedIronNH': 'seaIce',
                  'climatologyMapSeaIceDissolvedIronSH': 'seaIce',
-                 'climatologyMapIceFluxDustNH': 'ocean',
-                 'climatologyMapIceFluxDustSH': 'ocean'}
+                 }
 
         tags = {'timeSeriesOHC': ['timeSeries', 'ohc'],
                 'timeSeriesSST': ['timeSeries', 'sst'],
@@ -119,8 +118,7 @@ class TestAnalysisTask(TestCase):
                 'climatologyMapSeaIceDissolvedIronSH': ['climatology',
                                                         'horizontalMap',
                                                         'BGC'],
-                'climatologyMapIceFluxDustNH': ['climatology', 'horizontalMap'],
-                'climatologyMapIceFluxDustSH': ['climatology', 'horizontalMap']}
+                }
 
         # test 'all'
         expectedResults = {}
