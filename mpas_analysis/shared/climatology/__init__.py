@@ -9,6 +9,8 @@ from mpas_analysis.shared.climatology.climatology import get_remapper, \
 
 from mpas_analysis.shared.climatology.mpas_climatology_task import \
     MpasClimatologyTask
+from mpas_analysis.shared.climatology.mpas_snapshot_task import \
+    MpasSnapshotTask
 from mpas_analysis.shared.climatology.ref_year_mpas_climatology_task import \
     RefYearMpasClimatologyTask
 from mpas_analysis.shared.climatology.remap_mpas_climatology_subtask import \

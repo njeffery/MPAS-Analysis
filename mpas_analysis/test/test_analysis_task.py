@@ -138,8 +138,7 @@ class TestAnalysisTask(TestCase):
 
         expectedResults = {}
         for taskName in cores:
-            expectedResults[taskName] = 'timeSeries' not in tags[taskName] and \
-                'index' not in tags[taskName]
+            expectedResults[taskName] = True
         doTest("['all', 'snapshot']", expectedResults)
 
         # test 'all_<category>' and ['all', 'no_<category>']

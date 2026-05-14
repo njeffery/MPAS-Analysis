@@ -61,7 +61,7 @@ from mpas_analysis.shared.plot.colormap import register_custom_colormaps, \
 from mpas_analysis import ocean
 from mpas_analysis import sea_ice
 from mpas_analysis.shared.climatology import MpasClimatologyTask, \
-    RefYearMpasClimatologyTask
+    MpasSnapshotTask, RefYearMpasClimatologyTask
 from mpas_analysis.shared.time_series import MpasTimeSeriesTask
 
 from mpas_analysis.shared.regions import ComputeRegionMasks
@@ -80,7 +80,14 @@ def update_time_bounds_in_config(config):
 
     """
     if is_snapshot_mode(config):
+        # Snapshot replaces only climatology bounds. Time series and index
+        # continue to use their own requested ranges.
         update_time_bounds_in_config_for_snapshot(config)
+
+        for componentName in ['ocean', 'seaIce']:
+            for section in ['timeSeries', 'index']:
+                update_time_bounds_from_file_names(config, section,
+                                                   componentName)
         return
 
     # By updating the bounds for each component, we should end up with the
@@ -119,14 +126,6 @@ def update_time_bounds_in_config_for_snapshot(config):
         f'endYear = {year}',
         f'startDate = {startDate}',
         f'endDate = {endDate}',
-        '',
-        '[timeSeries]',
-        f'startYear = {year}',
-        f'endYear = {year}',
-        '',
-        '[index]',
-        f'startYear = {year}',
-        f'endYear = {year}',
         ''
     ]
 
@@ -204,9 +203,14 @@ def build_analysis_list(config, controlConfig):
     # Ocean Analyses
     oceanClimatologyTasks = {}
     for op in ['avg', 'min', 'max']:
-        oceanClimatologyTasks[op] = MpasClimatologyTask(config=config,
-                                                        componentName='ocean',
-                                                        op=op)
+        if is_snapshot_mode(config):
+            oceanClimatologyTasks[op] = MpasSnapshotTask(config=config,
+                                                         componentName='ocean',
+                                                         op=op)
+        else:
+            oceanClimatologyTasks[op] = MpasClimatologyTask(config=config,
+                                                            componentName='ocean',
+                                                            op=op)
     oceanTimeSeriesTask = MpasTimeSeriesTask(config=config,
                                              componentName='ocean')
     oceanIndexTask = MpasTimeSeriesTask(config=config,
@@ -356,8 +360,12 @@ def build_analysis_list(config, controlConfig):
         config, oceanRegionMasksTask, oceanRegionalProfiles, controlConfig))
 
     # Sea Ice Analyses
-    seaIceClimatologyTask = MpasClimatologyTask(config=config,
-                                                componentName='seaIce')
+    if is_snapshot_mode(config):
+        seaIceClimatologyTask = MpasSnapshotTask(config=config,
+                                                 componentName='seaIce')
+    else:
+        seaIceClimatologyTask = MpasClimatologyTask(config=config,
+                                                    componentName='seaIce')
     seaIceTimeSeriesTask = MpasTimeSeriesTask(config=config,
                                               componentName='seaIce')
 
