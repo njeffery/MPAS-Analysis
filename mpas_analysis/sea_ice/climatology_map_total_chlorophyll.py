@@ -107,6 +107,20 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
             diff_title_label = 'Main - Control'
 
         # Season and hemisphere-specific point-data bounds for title strings
+        # Whether point obs exist for this season/hemisphere
+        # (derived from Jeffery2020 nc file content)
+        has_point_obs = {
+            'ANN': {'NH': True, 'SH': True},
+            'JFM': {'NH': True, 'SH': False},
+            'AMJ': {'NH': True, 'SH': True},
+            'JAS': {'NH': False, 'SH': True},
+            'OND': {'NH': True, 'SH': True},
+            'DJF': {'NH': True, 'SH': False},
+            'MAM': {'NH': True, 'SH': True},
+            'JJA': {'NH': False, 'SH': True},
+            'SON': {'NH': True, 'SH': True}
+        }
+
         season_ranges = {
             'ANN': {'NH': None, 'SH': None},
             'JFM': {'NH': '0-38', 'SH': None},
@@ -119,9 +133,23 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
             'SON': {'NH': None, 'SH': None}
         }
 
+        # Observed bounds are reported for JFM/AMJ/JAS/OND; map
+        # climatological seasons to those bins when needed.
+        season_aliases = {
+            'DJF': 'JFM',
+            'MAM': 'AMJ',
+            'JJA': 'JAS',
+            'SON': 'OND'
+        }
+
         for comparison_grid_name in comparison_grid_names:
             for season in seasons:
+                season_for_bounds = season
                 data_range = season_ranges.get(season, {}).get(hemisphere)
+                if data_range is None and season in season_aliases:
+                    season_for_bounds = season_aliases[season]
+                    data_range = season_ranges.get(season_for_bounds, {}).get(
+                        hemisphere)
                 subtask_name = \
                     f'plot_{field_name}_{season}_{comparison_grid_name}'
                 subtask = PlotClimatologyMapSubtask(
@@ -141,21 +169,33 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
                         f'{season} {hemisphere_long} Sea-Ice Total Chlorophyll')
                 field_name_in_title = 'Total chlorophyll'
 
+                season_has_obs = (
+                    has_point_obs.get(season, {}).get(hemisphere, False))
                 if data_range:
                     field_name_in_title = (
                         'Total chlorophyll\n'
-                        f'Observed bounds: {data_range} mg Chla m$^{{-2}}$ '
+                        f'Observed bounds: '
+                        f'{data_range} mg Chla m$^{{-2}}$ '
                         '[Jeffery et al. 2020]')
+                elif season_has_obs:
+                    field_name_in_title = (
+                        'Total chlorophyll\n'
+                        '[Jeffery et al. 2020]')
+                else:
+                    field_name_in_title = 'Total chlorophyll'
 
                 if data_range:
                     image_caption = (
-                        f'{image_description}. <br> Observed bounds: '
+                        f'{image_description}. <br> Observed bounds '
+                        f'({season_for_bounds}): '
                         f'{data_range} mg Chla m$^{{-2}}$ '
                         '[Jeffery et al. 2020]')
-                else:
+                elif season_has_obs:
                     image_caption = (
                         f'{image_description}. <br> Reference: observed '
                         'range reported in [Jeffery et al. 2020]')
+                else:
+                    image_caption = image_description
 
                 subtask.set_plot_info(
                     outFileLabel=f'{field_name}{hemisphere}',

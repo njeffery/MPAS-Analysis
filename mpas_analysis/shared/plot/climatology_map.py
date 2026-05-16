@@ -420,8 +420,8 @@ def plot_global_comparison(
         if pointObservations is not None:
             ax.scatter(pointObservations['lon'], pointObservations['lat'],
                        c=pointObservations['values'], cmap=colormap,
-                       norm=norm, transform=projection, zorder=6, s=20,
-                       edgecolors='k', linewidths=0.05)
+                       norm=norm, transform=cartopy.crs.PlateCarree(),
+                       zorder=6, s=30, edgecolors='k', linewidths=0.2)
 
         if contours is not None:
             matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
@@ -729,7 +729,7 @@ def plot_projection_comparison(
             ax.scatter(pointObservations['lon'], pointObservations['lat'],
                        c=pointObservations['values'], cmap=colormap,
                        norm=norm, transform=cartopy.crs.PlateCarree(),
-                       zorder=6, s=80, edgecolors='k', linewidths=0.05)
+                       zorder=6, s=35, edgecolors='k', linewidths=0.2)
 
         # create an axes on the right side of ax. The width of cax will be 5%
         # of ax and the padding between cax and ax will be fixed at 0.05 inch.
@@ -785,7 +785,7 @@ def plot_projection_comparison(
 
     has_two_line_title = _set_two_line_suptitle(
         fig, config, title, titleFontSize=titleFontSize, y=0.95,
-        subtitleGap=0.04)
+        subtitleGap=0.03)
 
     plottitle_font = {'size': config.get('plot',
                                          'threePanelPlotTitleFontSize')}

@@ -111,6 +111,20 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
             seasons=seasons,
             iselValues=iselValues)
 
+        # Whether point obs exist for this season/hemisphere
+        # NH = Leu et al. 2015, SH = Arrigo et al. 2010
+        has_point_obs = {
+            'ANN': {'NH': True, 'SH': True},
+            'JFM': {'NH': True, 'SH': True},
+            'AMJ': {'NH': True, 'SH': True},
+            'JAS': {'NH': True, 'SH': True},
+            'OND': {'NH': False, 'SH': True},
+            'DJF': {'NH': True, 'SH': True},
+            'MAM': {'NH': True, 'SH': True},
+            'JJA': {'NH': True, 'SH': True},
+            'SON': {'NH': False, 'SH': True},
+        }
+
         # Season and hemisphere-specific observed-range annotations
         season_ranges = {
             'ANN': {'NH': None, 'SH': None},
@@ -122,6 +136,15 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
             'MAM': {'NH': None, 'SH': None},
             'JJA': {'NH': None, 'SH': None},
             'SON': {'NH': None, 'SH': None},
+        }
+
+        # Arrigo SH observations are reported for JFM/AMJ/JAS/OND; map
+        # climatological seasons to those bins when needed.
+        season_aliases = {
+            'DJF': 'JFM',
+            'MAM': 'AMJ',
+            'JJA': 'JAS',
+            'SON': 'OND'
         }
 
         if hemisphere == 'NH':
@@ -140,7 +163,18 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
 
         for comparisonGridName in comparisonGridNames:
             for season in seasons:
+                season_for_bounds = season
                 dataRange = season_ranges.get(season, {}).get(hemisphere)
+                if dataRange is None and season in season_aliases:
+                    season_for_bounds = season_aliases[season]
+                    dataRange = season_ranges.get(season_for_bounds, {}).get(
+                        hemisphere)
+
+                if dataRange is None and season == 'ANN' and hemisphere == 'SH':
+                    # Annual panel: report the full span of Arrigo seasonal
+                    # bounds so the cited range is visible on the figure.
+                    dataRange = '0-140'
+                    season_for_bounds = 'JFM/AMJ/JAS/OND'
 
                 if dataRange:
                     imageDescription = (
@@ -152,22 +186,31 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
                         '{} {} Sea-Ice Primary Production'.format(
                             season, hemisphereLong))
 
+                season_has_obs = (
+                    has_point_obs.get(season, {}).get(hemisphere, False))
                 fieldNameInTitle = 'Sea ice primary production'
                 if dataRange:
                     fieldNameInTitle = (
                         'Sea ice primary production\n'
                         'Observed bounds: {} mg m$^{{-2}}$ d$^{{-1}}$ [{}]'.format(
                             dataRange, obsCitation))
+                elif season_has_obs:
+                    fieldNameInTitle = (
+                        'Sea ice primary production\n'
+                        '[{}]'.format(obsCitation))
 
                 if dataRange:
                     imageCaption = (
-                        '{}. <br> Observed bounds: {} mg m$^{{-2}}$ '
+                        '{}. <br> Observed bounds ({}): {} mg m$^{{-2}}$ '
                         'd$^{{-1}}$ [{}]'.format(
-                            imageDescription, dataRange, obsCitation))
-                else:
+                            imageDescription, season_for_bounds,
+                            dataRange, obsCitation))
+                elif season_has_obs:
                     imageCaption = (
                         '{}. <br> Reference: observed range reported '
                         'in [{}]'.format(imageDescription, obsCitation))
+                else:
+                    imageCaption = imageDescription
 
                 subtaskName = 'plot_seaIcePrimaryProduction_{}_{}'.format(
                     season, comparisonGridName)
@@ -195,6 +238,7 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
                     groupLink='{}_bgc'.format(hemisphere.lower()),
                     galleryName='Sea ice primary production',
                     extend='both',
+                    configSectionName='climatologyMapSeaIcePrimaryProduction{}'.format(hemisphere),
                     prependComparisonGrid=False)
 
                 self.add_subtask(subtask)

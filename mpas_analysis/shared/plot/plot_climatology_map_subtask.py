@@ -29,6 +29,7 @@ from mpas_analysis.shared.climatology.comparison_descriptors import \
     get_comparison_descriptor
 
 from mpas_analysis.shared.projection import comparison_grid_titles
+from mpas_analysis.shared.constants import constants
 
 from mpas_analysis.shared.io.utility import build_obs_path
 
@@ -840,6 +841,19 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         depthMax = config.getfloat(section, 'pointObservationsDepthMax')
         scaleFactor = config.getfloat(section,
                                       'pointObservationsScaleFactor')
+        if config.has_option(section, 'pointObservationsMonthColumn'):
+            monthColumn = config.get(section, 'pointObservationsMonthColumn')
+        else:
+            monthColumn = None
+        if config.has_option(section, 'pointObservationsJitter'):
+            jitter = config.getfloat(section, 'pointObservationsJitter')
+        else:
+            jitter = 0.0
+
+        if config.has_option(section, 'pointObservationsJitterSeed'):
+            jitterSeed = config.getint(section, 'pointObservationsJitterSeed')
+        else:
+            jitterSeed = 0
 
         try:
             ds = xr.open_dataset(fileName)
@@ -865,6 +879,45 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         lat = ds[latColumn].values
         depth = ds[depthColumn].values
         values = ds[valueColumn].values
+        if monthColumn is None and ('month' in ds.data_vars or 'month' in ds.coords):
+            monthColumn = 'month'
+        if monthColumn is not None and (monthColumn in ds.data_vars or
+                                        monthColumn in ds.coords):
+            month = np.rint(ds[monthColumn].values).astype(int)
+        else:
+            month = None
+
+        # Convert longitudes from [0, 360) to [-180, 180) so overlays are
+        # placed correctly on cartopy maps.
+        lon = (lon + 180.) % 360. - 180.
+
+        # Filter by hemisphere if section name indicates NH or SH
+        # (for observations files with mixed hemisphere data)
+        hemisphere_mask = np.ones(len(lat), dtype=bool)
+        if 'NH' in section:
+            hemisphere_mask = lat >= 0.0
+        elif 'SH' in section:
+            hemisphere_mask = lat <= 0.0
+        
+        lon = lon[hemisphere_mask]
+        lat = lat[hemisphere_mask]
+        depth = depth[hemisphere_mask]
+        values = values[hemisphere_mask]
+        if month is not None:
+            month = month[hemisphere_mask]
+
+        # Filter by season when month metadata is available.
+        if month is not None:
+            season = self.season
+            if season in constants.monthDictionary:
+                seasonMonths = np.array(constants.monthDictionary[season],
+                                        dtype=int)
+                seasonMask = np.isin(month, seasonMonths)
+                lon = lon[seasonMask]
+                lat = lat[seasonMask]
+                depth = depth[seasonMask]
+                values = values[seasonMask]
+                month = month[seasonMask]
 
         # Filter by depth
         mask = depth < depthMax
@@ -880,6 +933,15 @@ class PlotClimatologyMapSubtask(AnalysisTask):
             return None
 
         values = scaleFactor * values.astype(float)
+
+        if jitter > 0.0:
+            # Apply deterministic jitter so dense/coincident stations remain
+            # visible as separate points without changing source datasets.
+            rng = np.random.default_rng(jitterSeed)
+            lon = lon + rng.uniform(-jitter, jitter, size=lon.shape)
+            lat = lat + rng.uniform(-jitter, jitter, size=lat.shape)
+            lon = (lon + 180.) % 360. - 180.
+            lat = np.clip(lat, -89.9, 89.9)
 
         pointObservations = {
             'lon': lon.astype(float),
