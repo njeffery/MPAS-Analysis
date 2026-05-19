@@ -2255,6 +2255,124 @@
     </nameInDocs>
   </observation>
 
+  <observation>
+    <name>
+      Sea-ice primary production points (NH): Leu et al. 2015
+    </name>
+    <component>
+      seaice
+    </component>
+    <description>
+      Point observations of sea-ice primary production in the Northern Hemisphere,
+      packaged for MPAS-Analysis sea-ice biogeochemistry climatology-map overlays.
+    </description>
+    <source>
+      [Leu et al. (2015)](https://doi.org/10.1029/2014JG002844)
+    </source>
+    <releasePolicy>
+      Please cite the reference when using this dataset in publications.
+    </releasePolicy>
+    <references>
+      [Leu et al. (2015)](https://doi.org/10.1029/2014JG002844)
+    </references>
+    <bibtex>
+    </bibtex>
+    <dataUrls>
+      (compiled from published source data)
+    </dataUrls>
+    <preprocessing>
+      - preprocess_observations/preprocess_sea_ice_bgc_point_obs.py
+    </preprocessing>
+    <tasks>
+      - climatologyMapSeaIcePrimaryProductionNH
+    </tasks>
+    <subdirectory>
+      SeaIce/BGC
+    </subdirectory>
+    <nameInDocs>
+      leu2015_sea_ice_pp_nh
+    </nameInDocs>
+  </observation>
+
+  <observation>
+    <name>
+      Sea-ice primary production points (SH): Arrigo et al. 2010
+    </name>
+    <component>
+      seaice
+    </component>
+    <description>
+      Point observations of Southern Hemisphere sea-ice primary production,
+      formatted for MPAS-Analysis seasonal climatology-map overlays.
+    </description>
+    <source>
+      [Arrigo et al. (2010)](https://doi.org/10.1029/2008JC005011)
+    </source>
+    <releasePolicy>
+      Please cite the reference when using this dataset in publications.
+    </releasePolicy>
+    <references>
+      [Arrigo et al. (2010)](https://doi.org/10.1029/2008JC005011)
+    </references>
+    <bibtex>
+    </bibtex>
+    <dataUrls>
+      (compiled from published source data)
+    </dataUrls>
+    <preprocessing>
+      - preprocess_observations/preprocess_arrigo_sea_ice_pp.py
+    </preprocessing>
+    <tasks>
+      - climatologyMapSeaIcePrimaryProductionSH
+    </tasks>
+    <subdirectory>
+      SeaIce/BGC
+    </subdirectory>
+    <nameInDocs>
+      arrigo2010_sea_ice_pp_sh
+    </nameInDocs>
+  </observation>
+
+  <observation>
+    <name>
+      Sea-ice total chlorophyll points: Jeffery et al. 2020
+    </name>
+    <component>
+      seaice
+    </component>
+    <description>
+      Point observations of sea-ice total chlorophyll used as overlay points for
+      NH and SH sea-ice biogeochemistry climatology maps.
+    </description>
+    <source>
+      [Jeffery et al. (2020)](https://doi.org/10.5194/bg-17-389-2020)
+    </source>
+    <releasePolicy>
+      Please cite the reference when using this dataset in publications.
+    </releasePolicy>
+    <references>
+      [Jeffery et al. (2020)](https://doi.org/10.5194/bg-17-389-2020)
+    </references>
+    <bibtex>
+    </bibtex>
+    <dataUrls>
+      (compiled from published source data)
+    </dataUrls>
+    <preprocessing>
+      - preprocess_observations/preprocess_sea_ice_bgc_point_obs.py
+    </preprocessing>
+    <tasks>
+      - climatologyMapSeaIceTotalChlorophyllNH
+      - climatologyMapSeaIceTotalChlorophyllSH
+    </tasks>
+    <subdirectory>
+      SeaIce/BGC
+    </subdirectory>
+    <nameInDocs>
+      jeffery2020_sea_ice_total_chl
+    </nameInDocs>
+  </observation>
+
   <!-- ICEBERGS -->
 
   <observation>

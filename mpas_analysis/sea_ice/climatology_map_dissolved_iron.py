@@ -12,6 +12,7 @@
 from mpas_analysis.shared import AnalysisTask
 
 from mpas_analysis.shared.climatology import RemapMpasClimatologySubtask
+from mpas_analysis.shared.constants import constants
 
 from mpas_analysis.shared.plot import PlotClimatologyMapSubtask
 
@@ -129,23 +130,50 @@ class ClimatologyMapSeaIceDissolvedIron(AnalysisTask):
                         controlConfig=control_config,
                         subtaskName=subtask_name)
 
+                    observed_bounds = None
+                    observed_citation = None
+
+                    season_months = constants.monthDictionary.get(season, [])
+                    includes_nov_or_dec = any(month in [11, 12]
+                                              for month in season_months)
+
+                    field_name_in_title = spec['title']
+                    if (hemisphere == 'SH' and
+                            field_name == 'totalVerticalDissolvedIronSnow' and
+                            includes_nov_or_dec):
+                        observed_bounds = '19.5 +/- 13.6 nM'
+                        observed_citation = 'Duprat et al. 2019'
+                        observed_location = \
+                            'near Davis Station, East Antarctica'
+                        field_name_in_title = (
+                            'Total dissolved iron in snow\n'
+                            'Observed estimate (Nov/Dec seasons, '
+                            f'{observed_location}): '
+                            f'{observed_bounds} ({observed_citation})')
+                    elif (hemisphere == 'NH' and
+                            field_name == 'totalVerticalDissolvedIronIce'):
+                        observed_bounds = '0.1-16 nM'
+                        observed_citation = 'Evans et al. 2018'
+                        field_name_in_title = (
+                            'Total dissolved iron in ice\n'
+                            f'Observed bounds: {observed_bounds} '
+                            f'({observed_citation})')
+                    elif (hemisphere == 'SH' and
+                            field_name == 'totalVerticalDissolvedIronIce'):
+                        observed_bounds = '0.7-37 nM'
+                        observed_citation = 'Lannuzel et al. 2010'
+                        field_name_in_title = (
+                            'Total dissolved iron in ice\n'
+                            f'Observed bounds: {observed_bounds} '
+                            f'({observed_citation})')
+
                     image_caption = (
                         f'Climatology map of {hemisphere_long}-hemisphere '
                         f'{spec["title"].lower()}')
-
-                    field_name_in_title = spec['title']
-                    if (hemisphere == 'NH' and
-                            field_name == 'totalVerticalDissolvedIronIce'):
-                        field_name_in_title = (
-                            'Total dissolved iron in ice\n'
-                            'Observed bounds: 0.1-16 nM '
-                            '(Evans et al. 2018)')
-                    elif (hemisphere == 'SH' and
-                            field_name == 'totalVerticalDissolvedIronIce'):
-                        field_name_in_title = (
-                            'Total dissolved iron in ice\n'
-                            'Observed bounds: 0.7-37 nM '
-                            '(Lannuzel et al. 2010)')
+                    if observed_bounds is not None:
+                        image_caption = (
+                            f'{image_caption}. <br> Observed bounds: '
+                            f'{observed_bounds} [{observed_citation}]')
 
                     subtask.set_plot_info(
                         outFileLabel=f'{field_name}{hemisphere}',
