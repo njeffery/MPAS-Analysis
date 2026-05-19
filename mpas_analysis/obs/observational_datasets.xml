@@ -2267,13 +2267,13 @@
       packaged for MPAS-Analysis sea-ice biogeochemistry climatology-map overlays.
     </description>
     <source>
-      [Leu et al. (2015)](https://doi.org/10.1029/2014JG002844)
+      [Leu et al. (2015)](https://doi.org/10.1016/j.pocean.2015.07.012)
     </source>
     <releasePolicy>
       Please cite the reference when using this dataset in publications.
     </releasePolicy>
     <references>
-      [Leu et al. (2015)](https://doi.org/10.1029/2014JG002844)
+      [Leu et al. (2015)](https://doi.org/10.1016/j.pocean.2015.07.012)
     </references>
     <bibtex>
       @article{leu2015arctic,
@@ -2284,7 +2284,7 @@
         pages={151--170},
         year={2015},
         publisher={Elsevier},
-        doi={10.1029/2014JG002844}
+        doi={10.1016/j.pocean.2015.07.012}
       }
     </bibtex>
     <dataUrls>
@@ -2306,7 +2306,7 @@
 
   <observation>
     <name>
-      Sea-ice primary production points (SH): Arrigo et al. 2010
+      Sea-ice primary production points (SH): Arrigo et al. 2008
     </name>
     <component>
       seaice
@@ -2316,25 +2316,25 @@
       formatted for MPAS-Analysis seasonal climatology-map overlays.
     </description>
     <source>
-      [Arrigo et al. (2010)](https://doi.org/10.1029/2008JC005011)
+      [Arrigo et al. (2008)](https://doi.org/10.1029/2007JC004551)
     </source>
     <releasePolicy>
       Please cite the reference when using this dataset in publications.
     </releasePolicy>
     <references>
-      [Arrigo et al. (2010)](https://doi.org/10.1029/2008JC005011)
+      [Arrigo et al. (2008)](https://doi.org/10.1029/2007JC004551)
     </references>
     <bibtex>
-      @article{arrigo2010primary,
+      @article{arrigo2008primary,
         title={Primary production in the Southern Ocean, 1997--2006},
         author={Arrigo, Kevin R. and van Dijken, Gert L. and Bushinsky, Seth},
         journal={Journal of Geophysical Research: Oceans},
-        volume={115},
-        number={C12},
-        pages={C00F09},
-        year={2010},
+        volume={113},
+        number={C8},
+        pages={},
+        year={2008},
         publisher={Wiley Online Library},
-        doi={10.1029/2008JC005011}
+        doi={10.1029/2007JC004551}
       }
     </bibtex>
     <dataUrls>
