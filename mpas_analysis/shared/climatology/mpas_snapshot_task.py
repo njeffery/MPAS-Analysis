@@ -100,6 +100,12 @@ class MpasSnapshotTask(MpasClimatologyTask):
         from mpas_analysis.shared.analysis_task import AnalysisTask
         AnalysisTask.setup_and_check(self)
 
+        self.startYear, self.endYear = self.get_start_and_end()
+
+        # In snapshot mode, use dates from config directly
+        self.startDate = self.config.get('climatology', 'startDate')
+        self.endDate = self.config.get('climatology', 'endDate')
+
         if self.op == 'avg':
             self.check_analysis_enabled(
                 analysisOptionName='config_am_timeseriesstatsmonthly_enable',
@@ -112,12 +118,6 @@ class MpasSnapshotTask(MpasClimatologyTask):
             self.check_analysis_enabled(
                 analysisOptionName='config_AM_timeSeriesStatsMonthlyMax_enable',
                 raiseException=True)
-
-        self.startYear, self.endYear = self.get_start_and_end()
-
-        # In snapshot mode, use dates from config directly
-        self.startDate = self.config.get('climatology', 'startDate')
-        self.endDate = self.config.get('climatology', 'endDate')
 
         # get a list of timeSeriesSta output files from the streams file,
         # reading only those that are between the start and end dates

@@ -10,8 +10,6 @@
 # https://raw.githubusercontent.com/MPAS-Dev/MPAS-Analysis/main/LICENSE
 
 import os
-import re
-
 import xarray as xr
 import numpy as np
 
@@ -225,9 +223,8 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         self.endDate = None
         self.filePrefix = None
         self.snapshotDate = None
-        self.snapshotUseRestartFile = False
-        self.snapshotRestartStamp = None
         self.snapshotYearMonth = None
+        self.snapshotControlSeason = None
         self.maskMinThreshold = None
         self.maskMaxThreshold = None
         self.extend = 'both'
@@ -364,30 +361,24 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         self.endDate = config.get('climatology', 'endDate')
         if is_snapshot_mode(config):
             self.snapshotDate = config.get('snapshot', 'date')
-            if config.has_option('snapshot', 'useRestartFile'):
-                self.snapshotUseRestartFile = config.getboolean(
-                    'snapshot', 'useRestartFile')
+            if config.has_option('snapshot', 'controlMonth'):
+                controlMonth = config.get('snapshot', 'controlMonth').strip()
+                if controlMonth in constants.abrevMonthNames:
+                    self.snapshotControlSeason = controlMonth
+                elif controlMonth.isdigit() and len(controlMonth) == 2:
+                    monthIndex = int(controlMonth)
+                    if monthIndex < 1 or monthIndex > 12:
+                        raise ValueError(
+                            'snapshot.controlMonth must be one of Jan-Dec '
+                            'or 01-12')
+                    self.snapshotControlSeason = \
+                        constants.abrevMonthNames[monthIndex - 1]
+                else:
+                    raise ValueError(
+                        'snapshot.controlMonth must be one of Jan-Dec '
+                        'or 01-12')
             if self.snapshotDate is not None:
                 self.snapshotYearMonth = self.snapshotDate[0:7]
-
-            if self.snapshotUseRestartFile:
-                if config.has_option('snapshot', 'restartSeconds'):
-                    restartSeconds = config.getint('snapshot',
-                                                   'restartSeconds')
-                    if restartSeconds < 0 or restartSeconds > 99999:
-                        raise ValueError(
-                            'snapshot.restartSeconds must be between '
-                            '0 and 99999')
-                    self.snapshotRestartStamp = \
-                        f'{self.snapshotDate}-{restartSeconds:05d}'
-                else:
-                    runSubdirectory = config.get('input', 'runSubdirectory')
-                    match = re.search(r'(\d{4}-\d{2}-\d{2}-\d{5})',
-                                      runSubdirectory)
-                    if match is not None:
-                        self.snapshotRestartStamp = match.group(1)
-                    else:
-                        self.snapshotRestartStamp = f'{self.snapshotDate}-00000'
 
         mainRunName = config.get('runs', 'mainRunName')
 
@@ -404,11 +395,7 @@ class PlotClimatologyMapSubtask(AnalysisTask):
             years = f'years{self.startYear:04d}-{self.endYear:04d}'
             prefixPieces.append(years)
         else:
-            if self.snapshotUseRestartFile and \
-                    self.snapshotRestartStamp is not None:
-                snapshotStamp = self.snapshotRestartStamp.replace('-', '')
-            else:
-                snapshotStamp = self.snapshotDate.replace('-', '')
+            snapshotStamp = self.snapshotDate.replace('-', '')
             prefixPieces.append(f'snapshot{snapshotStamp}')
 
         self.filePrefix = '_'.join(prefixPieces)
@@ -466,10 +453,14 @@ class PlotClimatologyMapSubtask(AnalysisTask):
                         season=season, comparisonGridName=comparisonGridName)
             remappedRefClimatology = xr.open_dataset(remappedFileName)
         elif self.controlConfig is not None:
+            controlSeason = season
+            if self.snapshotControlSeason is not None:
+                controlSeason = self.snapshotControlSeason
+
             climatologyName = self.remapMpasClimatologySubtask.climatologyName
             remappedFileName = \
                 get_remapped_mpas_climatology_file_name(
-                    self.controlConfig, season=season,
+                    self.controlConfig, season=controlSeason,
                     componentName=self.componentName,
                     climatologyName=climatologyName,
                     comparisonGridName=comparisonGridName,
@@ -484,6 +475,14 @@ class PlotClimatologyMapSubtask(AnalysisTask):
                 self.refTitleLabel = \
                     f'{self.refTitleLabel}\n' \
                     f'(years {controlStartYear:04d}-{controlEndYear:04d})'
+
+            # For snapshot comparisons, add the month/season to the title
+            # if comparing different months
+            if self.snapshotControlSeason is not None and \
+                    controlSeason != season:
+                self.refTitleLabel = \
+                    f'{self.refTitleLabel}\n' \
+                    f'({controlSeason} {controlStartYear:04d})'
 
         else:
             remappedRefClimatology = None
@@ -786,8 +785,6 @@ class PlotClimatologyMapSubtask(AnalysisTask):
         """Compose a title with season/years always on the first line."""
         if self.snapshotDate is None:
             season_years = f'({season}, years {self.startYear:04d}-{self.endYear:04d})'
-        elif self.snapshotUseRestartFile:
-            season_years = f'(snapshot, {self.snapshotRestartStamp})'
         else:
             season_years = f'({season}, Avg {self.snapshotYearMonth})'
         if self.fieldNameInTitle is None:

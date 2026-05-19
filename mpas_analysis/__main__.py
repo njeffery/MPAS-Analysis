@@ -129,13 +129,28 @@ def update_time_bounds_in_config_for_snapshot(config):
         ''
     ]
 
-    for section in _get_snapshot_sections(config):
-        if config.has_option(section, 'seasons'):
-            overrides.extend([
-                f'[{section}]',
-                f"seasons = ['{monthName}']",
-                ''
-            ])
+    # Override seasons for sections that are related to items in the generate
+    # list.  We match a section if its name equals a generate item or starts
+    # with one (e.g. 'climatologyMapBGC_Fe' matches 'climatologyMapBGC').
+    # This avoids touching unrelated sections whose obs files may only exist
+    # for specific seasons (e.g. climatologyMapSeaIceThickNH FM/ON only).
+    generate = config.getexpression('output', 'generate')
+    relevant_prefixes = [
+        item for item in generate
+        if item not in ('snapshot',) and not item.startswith('all')
+        and not item.startswith('no_')
+    ]
+    for section in _get_config_sections(config):
+        if not config.has_option(section, 'seasons'):
+            continue
+        if not any(section == prefix or section.startswith(prefix)
+                   for prefix in relevant_prefixes):
+            continue
+        overrides.extend([
+            f'[{section}]',
+            f"seasons = ['{monthName}']",
+            ''
+        ])
 
     with tempfile.NamedTemporaryFile(mode='w', suffix='.cfg',
                                      delete=False) as tempFile:

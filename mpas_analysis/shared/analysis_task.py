@@ -526,56 +526,6 @@ class AnalysisTask(Process):
         # -------
         # Xylar Asay-Davis
 
-        if is_snapshot_mode(self.config) and \
-                self.config.getboolean('snapshot', 'useRestartFile'):
-
-            restartDirectory = None
-            if self.config.has_option('snapshot', 'restartDirectory'):
-                restartDirOption = self.config.get('snapshot',
-                                                   'restartDirectory').strip()
-                if restartDirOption.lower() not in ['', 'none']:
-                    restartDirectory = build_config_full_path(
-                        self.config, 'input', 'restartDirectory',
-                        relativePathSection='snapshot')
-
-            if restartDirectory is not None:
-                snapshotDate = self.config.get('snapshot', 'date')
-                runName = self.config.get('runs', 'mainRunName')
-
-                restartSeconds = 0
-                if self.config.has_option('snapshot', 'restartSeconds'):
-                    restartSeconds = self.config.getint('snapshot',
-                                                        'restartSeconds')
-                    if restartSeconds < 0 or restartSeconds > 99999:
-                        raise ValueError('snapshot.restartSeconds must be '
-                                         'between 0 and 99999')
-                elif self.config.has_option('input', 'runSubdirectory'):
-                    runSubdirectory = self.config.get('input',
-                                                      'runSubdirectory')
-                    runSubdirectory = runSubdirectory.rstrip('/')
-                    stem = os.path.basename(runSubdirectory)
-                    parts = stem.split('-')
-                    if len(parts) == 4 and len(parts[-1]) == 5 and \
-                            parts[-1].isdigit():
-                        restartSeconds = int(parts[-1])
-
-                componentPrefixMap = {'ocean': 'mpaso', 'seaIce': 'mpassi'}
-                if self.componentName in componentPrefixMap:
-                    componentPrefix = componentPrefixMap[self.componentName]
-                    restartFile = (
-                        f'{runName}.{componentPrefix}.rst.'
-                        f'{snapshotDate}_{restartSeconds:05d}.nc')
-                    meshFilename = os.path.join(restartDirectory, restartFile)
-                    if not os.path.exists(meshFilename):
-                        raise IOError(
-                            f'Restart file "{meshFilename}" was not found. '
-                            f'Expected file name is hardcoded from '
-                            f'mainRunName/date/restartSeconds; '
-                            f'check [runs] mainRunName, [snapshot] date, '
-                            f'[snapshot] restartSeconds and '
-                            f'[snapshot] restartDirectory.')
-                    return meshFilename
-
         meshStream = self.config.get(self.componentName, 'meshStream')
         try:
             meshFilename = self.runStreams.readpath(meshStream)[0]
