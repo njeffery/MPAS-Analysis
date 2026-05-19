@@ -2276,6 +2276,16 @@
       [Leu et al. (2015)](https://doi.org/10.1029/2014JG002844)
     </references>
     <bibtex>
+      @article{leu2015arctic,
+        title={Arctic spring awakening - Steering principles behind the phenology of vernal ice algal blooms},
+        author={Leu, Eva and Mundy, C. J. and Assmy, Philipp and Campbell, Karley and Gabrielsen, Tove M. and Gosselin, Michel and Juul-Pedersen, Thomas and Gradinger, Rolf},
+        journal={Progress in Oceanography},
+        volume={139},
+        pages={151--170},
+        year={2015},
+        publisher={Elsevier},
+        doi={10.1029/2014JG002844}
+      }
     </bibtex>
     <dataUrls>
       (compiled from published source data)
@@ -2315,6 +2325,17 @@
       [Arrigo et al. (2010)](https://doi.org/10.1029/2008JC005011)
     </references>
     <bibtex>
+      @article{arrigo2010primary,
+        title={Primary production in the Southern Ocean, 1997--2006},
+        author={Arrigo, Kevin R. and van Dijken, Gert L. and Bushinsky, Seth},
+        journal={Journal of Geophysical Research: Oceans},
+        volume={115},
+        number={C12},
+        pages={C00F09},
+        year={2010},
+        publisher={Wiley Online Library},
+        doi={10.1029/2008JC005011}
+      }
     </bibtex>
     <dataUrls>
       (compiled from published source data)
@@ -2354,6 +2375,17 @@
       [Jeffery et al. (2020)](https://doi.org/10.5194/bg-17-389-2020)
     </references>
     <bibtex>
+      @article{jeffery2020biogeochemical,
+        title={Biogeochemical processes in the Canadian Arctic Archipelago},
+        author={Jeffery, Nicole and Maltrud, Mathew E. and Hunke, Elizabeth C. and Wang, Shanlin and Wolfe, Jonathan and Turner, Adrian K. and Burrows, S. M. and Shi, Xubin and Lipscomb, William H. and Maslowski, Wieslaw and Calvin, Katherine V.},
+        journal={Biogeosciences},
+        volume={17},
+        number={2},
+        pages={389--409},
+        year={2020},
+        publisher={Copernicus GmbH},
+        doi={10.5194/bg-17-389-2020}
+      }
     </bibtex>
     <dataUrls>
       (compiled from published source data)

@@ -91,6 +91,7 @@ observations/Ocean/BGC/obs.bib
 observations/Ocean/BGC/Chl/Chl_SeaWIFS_20180702.nc
 observations/Ocean/BGC/Fe/tagliabue_fe_database_jun2015_public_point_data.nc
 observations/Ocean/BGC/Fe/Fe_CMIP6_1.0x1.0degree_monthly_20260511.nc
+observations/Ocean/BGC/Fe/README.md
 observations/Ocean/BGC/CO2_gas_flux/CO2_gas_flux_1.0x1.0degree_20180628.nc
 observations/Ocean/BGC/SiO3/SiO3_1.0x1.0degree_20180628.nc
 observations/Ocean/BGC/PO4/PO4_1.0x1.0degree_20180628.nc
@@ -163,6 +164,7 @@ observations/SeaIce/SSMI/NASATeam_NSIDC0051/SSMI_NASATeam_gridded_concentration_
 observations/SeaIce/SSMI/NASATeam_NSIDC0051/SSMI_NASATeam_gridded_concentration_SH_mam.interp0.5x0.5_20180710.nc
 observations/SeaIce/SSMI/NASATeam_NSIDC0051/README.md
 observations/SeaIce/SSMI/NASATeam_NSIDC0051/SSMI_NASATeam_gridded_concentration_NH_jas.interp0.5x0.5_20180710.nc
+observations/SeaIce/BGC/README.md
 observations/SeaIce/BGC/Leu2015_sea_ice_primary_production.nc
 observations/SeaIce/BGC/Arrigo2010_sea_ice_primary_production_SH.nc
 observations/SeaIce/BGC/Jeffery2020_sea_ice_total_chlorophyll.nc
