@@ -17,6 +17,7 @@ import dask
 import multiprocessing
 from multiprocessing.pool import ThreadPool
 import glob
+import re
 
 from mpas_tools.io import write_netcdf
 
@@ -490,6 +491,26 @@ class MpasClimatologyTask(AnalysisTask):
         os.chdir(inDirectory)
 
         inFiles = sorted(glob.glob(f'{self.ncclimoModel}*'))
+
+        # ncclimo expects exactly one file per month between -s and -e.
+        # Filter out any extra years that may be present in the symlink
+        # directory (e.g. branch-year files such as 0001-*).
+        year_month_pattern = re.compile(r'\.(\d{4})-(\d{2})-\d{2}\.nc$')
+        filteredFiles = []
+        for fileName in inFiles:
+            match = year_month_pattern.search(os.path.basename(fileName))
+            if match is None:
+                continue
+            year = int(match.group(1))
+            if self.startYear <= year <= self.endYear:
+                filteredFiles.append(fileName)
+
+        inFiles = filteredFiles
+
+        if len(inFiles) == 0:
+            raise OSError(f'No ncclimo input files found between '
+                          f'{self.startYear:04d} and {self.endYear:04d} in '
+                          f'{inDirectory}')
 
         args = ['ncclimo',
                 '--no_stdin',

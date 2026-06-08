@@ -1462,6 +1462,54 @@
 
   <observation>
     <name>
+      Ocean CO2 Sink
+    </name>
+    <component>
+      ocean
+    </component>
+    <description>
+      Global ocean CO2 flux timeseries from 1960 to 2024.  Best estimate with uncertainty from Fig. 4d of Freidlingstein et al. 2025.
+    </description>
+    <source>
+      [Weblotdigitizer]
+      (https://essd.copernicus.org/articles/18/3211/2026/essd-18-3211-2026-discussion.html)
+    </source>
+    <releasePolicy>
+      Please cite the source publication when using this dataset.
+    </releasePolicy>
+    <references>
+      - [Friedlingstein et al (2025)](https://essd.copernicus.org/articles/18/3211/2026/essd-18-3211-2026-discussion.html)
+    </references>
+    <bibtex>
+      @Article{essd-18-3211-2026,
+      AUTHOR = {Friedlingstein, P. and O'Sullivan, M. and Jones, M. W. and Andrew, R. M. and Bakker, D. C. E. and Hauck, J. and Landsch\"utzer, P. and Le Qu\'er\'e, C. and Li, H. and Luijkx, I. T. and Peters, G. P. and Peters, W. and Pongratz, J. and Schwingshackl, C. and Sitch, S. and Canadell, J. G. and Ciais, P. and Aas, K. and Alin, S. R. and Anthoni, P. and Barbero, L. and Bates, N. R. and Bellouin, N. and Benoit-Cattin, A. and Berghoff, C. F. and Bernardello, R. and Bopp, L. and Brasika, I. B. M. and Chamberlain, M. A. and Chandra, N. and Chevallier, F. and Chini, L. P. and Collier, N. O. and Colligan, T. H. and Cronin, M. and Djeutchouang, L. M. and Dou, X. and Enright, M. P. and Enyo, K. and Erb, M. and Evans, W. and Feely, R. A. and Feng, L. and Ford, D. J. and Foster, A. and Fransner, F. and Gasser, T. and Gehlen, M. and Gkritzalis, T. and Goncalves De Souza, J. and Grassi, G. and Gregor, L. and Gruber, N. and Guenet, B. and G\"urses, \"O. and Harrington, K. and Harris, I. and Heinke, J. and Hurtt, G. C. and Iida, Y. and Ilyina, T. and Ito, A. and Jacobson, A. R. and Jain, A. K. and Jarn\'{\i}kov\'a, T. and Jersild, A. and Jiang, F. and Jones, S. D. and Kato, E. and Keeling, R. F. and Klein Goldewijk, K. and Knauer, J. and Kong, Y. and Korsbakken, J. I. and Koven, C. and Kunimitsu, T. and Lan, X. and Liu, J. and Liu, Z. and Liu, Z. and Lo Monaco, C. and Ma, L. and Marland, G. and McGuire, P. C. and McKinley, G. A. and Melton, J. R. and Monacci, N. and Monier, E. and Morgan, E. J. and Munro, D. R. and M\"uller, J. D. and Nakaoka, S.-I. and Nayagam, L. R. and Niwa, Y. and Nutzel, T. and Olsen, A. and Omar, A. M. and Pan, N. and Pandey, S. and Pierrot, D. and Qin, Z. and Regnier, P. and Rehder, G. and Resplandy, L. and Roobaert, A. and Rosan, T. M. and R\"odenbeck, C. and Schwinger, J. and Skjelvan, I. and Smallman, T. L. and Spada, V. and Sreeush, M. G. and Sun, Q. and Sutton, A. J. and Sweeney, C. and Swingedouw, D. and S\'ef\'erian, R. and Takao, S. and Tatebe, H. and Tian, H. and Tian, X. and Tilbrook, B. and Tsujino, H. and Tubiello, F. and van Ooijen, E. and van der Werf, G. R. and van de Velde, S. J. and Walker, A. P. and Wanninkhof, R. and Yang, X. and Yuan, W. and Yue, X. and Zeng, J.},
+      TITLE = {Global Carbon Budget 2025},
+      JOURNAL = {Earth System Science Data},
+      VOLUME = {18},
+      YEAR = {2026},
+      NUMBER = {5},
+      PAGES = {3211--3288},
+      URL = {https://essd.copernicus.org/articles/18/3211/2026/},
+      DOI = {10.5194/essd-18-3211-2026}
+      }
+    </bibtex>
+    <dataUrls>
+    </dataUrls>
+    <preprocessing>
+    </preprocessing>
+    <tasks>
+      - TimeSeriesOceanBGCFlux
+    </tasks>
+    <subdirectory>
+      Ocean/BGC/CO2_gas_flux
+    </subdirectory>
+    <nameInDocs>
+      global-ocean-CO2-gas_flux
+    </nameInDocs>
+  </observation>
+
+  <observation>
+    <name>
       Surface Current Variance from Drifter Data
     </name>
     <component>

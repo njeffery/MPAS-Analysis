@@ -56,6 +56,8 @@ from mpas_analysis.ocean.time_series_ocean_regions import \
 
 from mpas_analysis.ocean.time_series_transport import \
     TimeSeriesTransport
+from mpas_analysis.ocean.time_series_ocean_bgc_flux import \
+    TimeSeriesOceanBGCFlux
 
 from mpas_analysis.ocean.regional_ts_diagrams import \
     RegionalTSDiagrams
