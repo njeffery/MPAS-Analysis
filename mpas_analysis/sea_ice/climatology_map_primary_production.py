@@ -109,7 +109,8 @@ class ClimatologyMapSeaIcePrimaryProduction(AnalysisTask):
             variableList=[mpasFieldName],
             comparisonGridNames=comparisonGridNames,
             seasons=seasons,
-            iselValues=iselValues)
+            iselValues=iselValues,
+            ignoreIfMissingVariables=True)
 
         # Whether point obs exist for this season/hemisphere
         # NH = Leu et al. 2015, SH = Arrigo et al. 2010

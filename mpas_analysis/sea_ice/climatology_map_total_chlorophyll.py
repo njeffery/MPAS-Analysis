@@ -95,7 +95,8 @@ class ClimatologyMapSeaIceTotalChlorophyll(AnalysisTask):
             variableList=[mpas_field_name],
             comparisonGridNames=comparison_grid_names,
             seasons=seasons,
-            iselValues=None)
+            iselValues=None,
+            ignoreIfMissingVariables=True)
 
         ref_title_label = None
         ref_field_name = None

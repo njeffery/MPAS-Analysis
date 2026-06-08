@@ -107,6 +107,7 @@ class ClimatologyMapSeaIceDissolvedIron(AnalysisTask):
                 comparisonGridNames=comparison_grid_names,
                 seasons=seasons,
                 iselValues=None,
+                ignoreIfMissingVariables=True,
                 subtaskName=f'remap_{field_name}_{hemisphere}')
 
             ref_title_label = None

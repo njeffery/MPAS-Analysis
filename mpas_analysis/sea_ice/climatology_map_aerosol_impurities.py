@@ -203,6 +203,7 @@ class RemapMpasSeaIceImpurityClimatology(RemapMpasClimatologySubtask):
             comparisonGridNames=comparison_grid_names,
             seasons=seasons,
             iselValues=None,
+            ignoreIfMissingVariables=True,
             subtaskName=f'remap_{climatology_name}')
 
         self.conversion_factor = conversion_factor
